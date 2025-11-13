@@ -9,5 +9,6 @@ module.exports = {
     'react/jsx-key': ['warn', { checkFragmentShorthand: true }],
     'no-console': ['warn', { allow: ['error', 'warn'] }],
     '@next/next/no-img-element': 'off',
+    'react/no-unescaped-entities': 'off',
   },
 }

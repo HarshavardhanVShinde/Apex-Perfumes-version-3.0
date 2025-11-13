@@ -33,7 +33,6 @@ export function Collections() {
     ? 'Bold and sophisticated fragrances for the modern man'
     : 'Elegant and captivating scents for every occasion';
 
-  const fallbackProductsForCategory = [] as Product[];
 
   // Validate category - redirect to /collections/men if invalid
   useEffect(() => {
@@ -71,7 +70,7 @@ export function Collections() {
     return () => {
       isMounted = false;
     };
-  }, [activeCategory, fallbackProductsForCategory, reloadToken]);
+  }, [activeCategory, reloadToken]);
 
   const handleRetry = useCallback(() => {
     if (!loading) {

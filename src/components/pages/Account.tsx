@@ -43,11 +43,10 @@ export function Account() {
     }
   }, [user, router]);
 
-  if (!user) {
-    return null;
-  }
-
   React.useEffect(() => {
+    if (!user) {
+      return;
+    }
     const fetchOrders = async () => {
       try {
         setLoading(true);
@@ -100,6 +99,10 @@ export function Account() {
 
     fetchOrders();
   }, [user]);
+
+  if (!user) {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();

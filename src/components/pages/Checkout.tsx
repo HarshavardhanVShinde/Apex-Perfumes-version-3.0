@@ -152,6 +152,9 @@ export function Checkout() {
       alert('Unexpected error during checkout.');
     }
   };
+  const handleBackToCart = useCallback(() => {
+    openCart();
+  }, [openCart]);
 
   if (items.length === 0) {
     return (
@@ -176,9 +179,6 @@ export function Checkout() {
     );
   }
 
-  const handleBackToCart = useCallback(() => {
-    openCart();
-  }, [openCart]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 py-12 px-4">

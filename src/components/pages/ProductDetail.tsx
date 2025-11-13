@@ -9,12 +9,10 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ProductCard } from '@/components/commerce/ProductCard';
 import { formatPrice, formatRating } from '@/lib/utils';
-import { fetchProduct, fetchProducts } from '@/lib/api/products';
-import { mapProductRowToProduct } from '@/lib/supabase/mappers';
-import type { Database } from '@/types/supabase';
+import { fetchProduct as fetchProductApi, fetchProducts } from '@/lib/api/products';
 import type { Product as AppProduct } from '@/types';
 
-type SupabaseProduct = Database['public']['Tables']['products']['Row'];
+type Product = AppProduct;
 
 export function ProductDetail() {
   const params = useParams();
@@ -22,7 +20,7 @@ export function ProductDetail() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [product, setProduct] = useState<SupabaseProduct | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<AppProduct[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('100ml');
@@ -31,9 +29,9 @@ export function ProductDetail() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
 
-  // Fetch product and related products from Supabase
+  // Fetch product and related products via API
   useEffect(() => {
-    async function fetchProduct() {
+    async function loadProductData() {
       if (!id) return;
       
       try {
@@ -41,7 +39,7 @@ export function ProductDetail() {
         setError(null);
         
         // Fetch the product
-        const productData = await fetchProduct(id);
+        const productData = await fetchProductApi(id);
         
         if (!productData) {
           setError('Product not found');
@@ -71,7 +69,7 @@ export function ProductDetail() {
       }
     }
     
-    fetchProduct();
+    loadProductData();
   }, [id]);
 
   // Show loading state while params are being resolved
@@ -112,8 +110,7 @@ export function ProductDetail() {
   const handleAddToCart = async () => {
     if (product) {
       try {
-        const appProduct = mapProductRowToProduct(product);
-        await addItem(appProduct, quantity, selectedSize);
+        await addItem(product, quantity, selectedSize);
         console.log('✅ Added to cart:', product.name);
       } catch (error) {
         console.error('❌ Error adding to cart:', error);
@@ -270,19 +267,19 @@ export function ProductDetail() {
             <div className="space-y-5">
               {/* Badges - With Gradient Icons */}
               <div className="flex gap-2 flex-wrap">
-                {product.is_new && (
+                {product.isNew && (
                   <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
                     <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                     <span className="text-xs font-bold text-black dark:text-white">New Arrival</span>
                   </div>
                 )}
-                {product.is_best_seller && (
+                {product.isBestSeller && (
                   <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
                     <Award className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                     <span className="text-xs font-bold text-black dark:text-white">Best Seller</span>
                   </div>
                 )}
-                {product.is_on_sale && (
+                {product.isOnSale && (
                   <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
                     <Flame className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                     <span className="text-xs font-bold text-black dark:text-white">Limited Offer</span>
@@ -373,13 +370,13 @@ export function ProductDetail() {
                   <span className="text-3xl font-bold text-black dark:text-white">
                     {formatPrice(getSizePrice())}
                   </span>
-                  {product.original_price && (
+                  {product.originalPrice && (
                     <div className="flex items-end gap-1 pb-1">
                       <span className="text-sm text-slate-500 dark:text-gray-500 line-through">
-                        {formatPrice(product.original_price)}
+                        {formatPrice(product.originalPrice)}
                       </span>
                       <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded">
-                        -{Math.round((1 - getSizePrice() / product.original_price) * 100)}%
+                        -{Math.round((1 - getSizePrice() / product.originalPrice) * 100)}%
                       </span>
                     </div>
                   )}
