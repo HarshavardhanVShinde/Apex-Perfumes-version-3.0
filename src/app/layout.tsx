@@ -13,8 +13,6 @@ import { onAuthStateChange } from '@/lib/supabase/auth';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { useWishlistStore } from '@/stores/wishlist';
-import { storage } from '@/lib/storage';
-import { syncCartFromLocalStorage } from '@/lib/supabase/cart';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -41,28 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
         // Load user state first
         await useAuthStore.getState().loadUser();
-
-        if (authUser) {
-          console.log('👤 User authenticated, syncing cart...');
-          // Sync local cart to Supabase if user was previously a guest
-          const localItems = storage.get('apex-cart') || [];
-          if (Array.isArray(localItems) && localItems.length > 0) {
-            console.log(`📦 Found ${localItems.length} local cart items to sync`);
-            const itemsToSync = localItems.map((item: any) => ({
-              productId: item.product?.id ?? item.id,
-              quantity: item.quantity ?? 1,
-            }));
-            
-            try {
-              await syncCartFromLocalStorage(authUser.id, itemsToSync);
-              storage.remove('apex-cart');
-              console.log('✅ Local cart synced to Supabase');
-            } catch (e) {
-              console.error('❌ Failed syncing local cart to Supabase:', e);
-              // Don't remove local cart if sync fails
-            }
-          }
-        }
 
         // Always reload cart and wishlist after auth state change
         console.log('🔄 Reloading cart and wishlist...');

@@ -152,49 +152,89 @@ export async function addToCart(
 }
 
 // Remove item from cart (with size support)
-export async function removeFromCart(
-  userId: string, 
-  productId: string,
-  selectedSize: string = '100ml'
-): Promise<boolean> {
-  const { error } = await supabase
+export interface RemoveCartItemOptions {
+  userId: string;
+  cartItemId?: string;
+  productId?: string;
+  selectedSize?: string | null;
+}
+
+export async function removeFromCart(options: RemoveCartItemOptions): Promise<boolean> {
+  const { userId, cartItemId, productId, selectedSize } = options;
+
+  let query = supabase
     .from('cart_items')
     .delete()
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .eq('selected_size', selectedSize)
+    .eq('user_id', userId);
+
+  if (cartItemId) {
+    query = query.eq('id', cartItemId);
+  } else if (productId) {
+    query = query.eq('product_id', productId);
+    if (selectedSize !== undefined) {
+      if (selectedSize === null) {
+        query = query.is('selected_size', null);
+      } else {
+        query = query.or(`selected_size.eq.${selectedSize},selected_size.is.null`);
+      }
+    }
+  } else {
+    throw new Error('removeFromCart requires a cartItemId or productId.');
+  }
+
+  const { error } = await query;
 
   if (error) {
-    throw error
+    throw error;
   }
 
   return true;
 }
 
 // Update item quantity in cart (with size support)
-export async function updateCartItemQuantity(
-  userId: string, 
-  productId: string, 
-  quantity: number,
-  selectedSize: string = '100ml'
-): Promise<boolean> {
+export interface UpdateCartQuantityOptions {
+  userId: string;
+  quantity: number;
+  cartItemId?: string;
+  productId?: string;
+  selectedSize?: string | null;
+}
+
+export async function updateCartItemQuantity(options: UpdateCartQuantityOptions): Promise<boolean> {
+  const { userId, quantity, cartItemId, productId, selectedSize } = options;
+
   if (quantity <= 0) {
-    await removeFromCart(userId, productId, selectedSize)
+    await removeFromCart({ userId, cartItemId, productId, selectedSize });
     return true;
   }
 
-  const { error } = await supabase
+  let query = supabase
     .from('cart_items')
-    .update({ 
-      quantity: quantity,
-      updated_at: new Date().toISOString()
+    .update({
+      quantity,
+      updated_at: new Date().toISOString(),
     })
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .eq('selected_size', selectedSize)
+    .eq('user_id', userId);
+
+  if (cartItemId) {
+    query = query.eq('id', cartItemId);
+  } else if (productId) {
+    query = query.eq('product_id', productId);
+    if (selectedSize !== undefined) {
+      if (selectedSize === null) {
+        query = query.is('selected_size', null);
+      } else {
+        query = query.eq('selected_size', selectedSize);
+      }
+    }
+  } else {
+    throw new Error('updateCartItemQuantity requires a cartItemId or productId.');
+  }
+
+  const { error } = await query;
 
   if (error) {
-    throw error
+    throw error;
   }
 
   return true;

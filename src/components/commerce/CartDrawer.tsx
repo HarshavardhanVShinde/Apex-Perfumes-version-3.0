@@ -2,94 +2,79 @@
 import React, { useState } from 'react';
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cart';
-import { useAuthStore } from '@/stores/auth';
-import { removeFromCart } from '@/lib/supabase/cart';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
+import { getProduct } from '@/lib/supabase/products';
+import { mapProductRowToProduct } from '@/lib/supabase/mappers';
+import type { CartItem as CartItemType } from '@/types';
 
-const SIZES = ['20ml', '50ml', '100ml'];
-const SIZE_PRICES: Record<string, number> = {
-  '20ml': 349,
-  '50ml': 599,
-  '100ml': 799
-};
+const DEFAULT_SIZES = ['20ml', '50ml', '100ml'];
 
 export function CartDrawer() {
-  const { 
-    items, 
+  const {
+    items,
+    totals,
     isOpen,
     isLoading,
     error,
-    closeCart, 
-    updateQuantity, 
-    removeItem, 
-    getSubtotal, 
-    getTax, 
-    getTotal,
+    closeCart,
+    updateQuantity,
+    removeItem,
+    addItem,
     clearError,
-    setItems
   } = useCartStore();
 
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
 
-  const handleSizeChange = async (productId: string, oldSize: string, newSize: string, quantity: number) => {
-    const oldItemKey = `${productId}-${oldSize}`;
-    const newItemKey = `${productId}-${newSize}`;
-    
-    // Add both old and new keys to loading state
+  const buildLoadingKey = (cartItemId: string, size: string | null) => `${cartItemId}-${size ?? 'default'}`;
+
+  const handleSizeChange = async (item: CartItemType, newSize: string) => {
+    const oldSizeValue = item.selectedSize ?? null;
+    const oldDisplaySize = oldSizeValue ?? '100ml';
+    if (newSize === oldDisplaySize) return;
+
+    const oldItemKey = buildLoadingKey(item.id, oldSizeValue);
+    const newItemKey = `${item.product.id}-${newSize}`;
+
     setLoadingItems(prev => {
-      const newSet = new Set(prev);
-      newSet.add(oldItemKey);
-      newSet.add(newItemKey);
-      return newSet;
+      const next = new Set(prev);
+      next.add(oldItemKey);
+      next.add(newItemKey);
+      return next;
     });
-    
+
     try {
-      // Find the product
-      const item = items.find(item => item.product.id === productId && item.selectedSize === oldSize);
-      if (!item) {
+      const supabaseProduct = await getProduct(item.product.id);
+      if (!supabaseProduct) {
         throw new Error('Product not found');
       }
 
-      const user = useAuthStore.getState().user;
-      
-      if (user) {
-        // For authenticated users, use the cart store methods which handle loading state properly
-        await removeItem(productId, oldSize);
-        await useCartStore.getState().addItem(item.product, quantity, newSize);
-      } else {
-        // For guest users, handle locally
-        const newItems = items
-          .filter(currentItem => !(currentItem.product.id === productId && currentItem.selectedSize === oldSize))
-          .concat([{
-            ...item,
-            id: newItemKey,
-            selectedSize: newSize
-          }]);
-        
-        setItems(newItems);
-      }
-      
+      const mappedProduct = mapProductRowToProduct(supabaseProduct);
+      await addItem(mappedProduct, item.quantity, newSize);
+      await removeItem(item.id, item.product.id, oldSizeValue);
     } catch (error) {
       console.error('Error changing size:', error);
+      await useCartStore.getState().loadCart();
     } finally {
-      // Clear both loading states
       setLoadingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(oldItemKey);
-        newSet.delete(newItemKey);
-        return newSet;
+        const next = new Set(prev);
+        next.delete(oldItemKey);
+        next.delete(newItemKey);
+        return next;
       });
     }
   };
 
-  const handleQuantityChange = async (productId: string, selectedSize: string, newQuantity: number) => {
-    const itemKey = `${productId}-${selectedSize}`;
+  const handleQuantityChange = async (item: CartItemType, newQuantity: number) => {
+    const sizeValue = item.selectedSize ?? null;
+    const itemKey = buildLoadingKey(item.id, sizeValue);
     setLoadingItems(prev => new Set(prev).add(itemKey));
-    
+
     try {
-      await updateQuantity(productId, newQuantity, selectedSize);
+      await updateQuantity(item.id, item.product.id, newQuantity, item.selectedSize ?? null);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
     } finally {
       setLoadingItems(prev => {
         const newSet = new Set(prev);
@@ -99,12 +84,15 @@ export function CartDrawer() {
     }
   };
 
-  const handleRemoveItem = async (productId: string, selectedSize: string) => {
-    const itemKey = `${productId}-${selectedSize}`;
+  const handleRemoveItem = async (item: CartItemType) => {
+    const sizeValue = item.selectedSize ?? null;
+    const itemKey = buildLoadingKey(item.id, sizeValue);
     setLoadingItems(prev => new Set(prev).add(itemKey));
-    
+
     try {
-      await removeItem(productId, selectedSize);
+      await removeItem(item.id, item.product.id, item.selectedSize ?? null);
+    } catch (error) {
+      console.error('Error removing cart item:', error);
     } finally {
       setLoadingItems(prev => {
         const newSet = new Set(prev);
@@ -113,11 +101,6 @@ export function CartDrawer() {
       });
     }
   };
-
-  const getItemPrice = (selectedSize: string): number => {
-    return SIZE_PRICES[selectedSize] || SIZE_PRICES['100ml'];
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -191,19 +174,25 @@ export function CartDrawer() {
           ) : (
             <div className="space-y-4">
               {items.map(item => {
-                const selectedSize = item.selectedSize || '100ml';
-                const itemKey = `${item.product.id}-${selectedSize}`;
+                const sizeValue = item.selectedSize ?? null;
+                const selectedSize = sizeValue ?? '100ml';
+                const itemKey = buildLoadingKey(item.id, sizeValue);
                 const isItemLoading = loadingItems.has(itemKey);
-                const itemPrice = getItemPrice(selectedSize);
-                const itemTotal = itemPrice * item.quantity;
+                const unitPrice = item.unitPrice ?? item.product.price;
+                const lineTotal = item.lineTotal ?? unitPrice * item.quantity;
+                const sizeOptions = item.product.sizes ? Object.keys(item.product.sizes) : DEFAULT_SIZES;
+                const coverImage = item.product.images[0] ?? '/perfume-logo.png';
 
                 return (
                   <div key={itemKey} className="flex space-x-4 border-b border-gray-200 dark:border-slate-800 pb-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 -mx-2 px-2 py-2 rounded-lg transition-colors">
                     <div className="relative">
                       <img
-                        src={item.product.images[0]}
+                        src={coverImage}
                         alt={item.product.name}
                         className="w-20 h-20 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                        onError={(event) => {
+                          event.currentTarget.src = '/perfume-logo.png';
+                        }}
                       />
                       {item.quantity > 1 && (
                         <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
@@ -230,22 +219,31 @@ export function CartDrawer() {
                         <label className="text-xs font-semibold text-slate-600 dark:text-gray-400">Size:</label>
                         <select
                           value={selectedSize}
-                          onChange={(e) => handleSizeChange(item.product.id, selectedSize, e.target.value, item.quantity)}
+                          onChange={(e) => handleSizeChange(item, e.target.value)}
                           disabled={isItemLoading}
                           className="px-2 py-1 text-xs border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium disabled:opacity-50 hover:border-amber-400 dark:hover:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
                         >
-                          {SIZES.map(size => (
-                            <option key={size} value={size}>
-                              {size} - ₹{SIZE_PRICES[size]}
-                            </option>
-                          ))}
+                          {sizeOptions.map(size => {
+                            const priceForSize = item.product.sizes?.[size]?.price;
+                            const label = priceForSize !== undefined
+                              ? `${size} - ${formatPrice(priceForSize)}`
+                              : size === selectedSize
+                                ? `${size} - ${formatPrice(unitPrice)}`
+                                : size;
+
+                            return (
+                              <option key={size} value={size}>
+                                {label}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
 
                       {/* Quantity controls */}
                       <div className="flex items-center space-x-1 mt-2 bg-gray-100 dark:bg-slate-800 rounded-lg p-1 w-fit">
                         <button
-                          onClick={() => handleQuantityChange(item.product.id, selectedSize, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item, item.quantity - 1)}
                           disabled={isItemLoading}
                           className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-50 text-slate-600 dark:text-gray-400"
                         >
@@ -253,7 +251,7 @@ export function CartDrawer() {
                         </button>
                         <span className="text-sm font-semibold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
                         <button
-                          onClick={() => handleQuantityChange(item.product.id, selectedSize, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item, item.quantity + 1)}
                           disabled={isItemLoading}
                           className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-50 text-slate-600 dark:text-gray-400"
                         >
@@ -261,7 +259,7 @@ export function CartDrawer() {
                         </button>
                         <div className="border-l border-gray-300 dark:border-slate-700 mx-1"></div>
                         <button
-                          onClick={() => handleRemoveItem(item.product.id, selectedSize)}
+                          onClick={() => handleRemoveItem(item)}
                           disabled={isItemLoading}
                           className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded transition-colors disabled:opacity-50"
                           title="Remove item"
@@ -274,10 +272,10 @@ export function CartDrawer() {
                     <div className="text-right flex flex-col justify-between">
                       <div>
                         <p className="font-bold text-slate-900 dark:text-white text-sm">
-                          ₹{itemTotal.toLocaleString('en-IN')}
+                          {formatPrice(lineTotal)}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-gray-500">
-                          ₹{itemPrice}/unit
+                          {formatPrice(unitPrice)} / unit
                         </p>
                       </div>
                     </div>
@@ -292,43 +290,28 @@ export function CartDrawer() {
         {items.length > 0 && (
           <div className="border-t border-gray-200 dark:border-slate-800 p-6 bg-gradient-to-t from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 space-y-4">
             <div className="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-lg border border-gray-200 dark:border-slate-800">
-              {/* Calculate subtotal based on size prices */}
-              {(() => {
-                const subtotal = items.reduce((sum, item) => {
-                  const selectedSize = item.selectedSize || '100ml';
-                  const itemPrice = getItemPrice(selectedSize);
-                  return sum + (itemPrice * item.quantity);
-                }, 0);
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600 dark:text-gray-400 font-medium">Subtotal</span>
+                <span className="text-slate-900 dark:text-white font-semibold">{formatPrice(totals.subtotal)}</span>
+              </div>
 
-                // Check for "Buy 2 Get 1 Free" promotion (2 x 100ml = 1 free)
-                const count100ml = items.reduce((sum, item) => {
-                  const selectedSize = item.selectedSize || '100ml';
-                  return sum + (selectedSize === '100ml' ? item.quantity : 0);
-                }, 0);
-                
-                const freeBottles = Math.floor(count100ml / 2);
-                const discount = freeBottles * SIZE_PRICES['100ml'];
-                const total = subtotal - discount;
+              {totals.discount > 0 && (
+                <div className="flex justify-between text-sm bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800">
+                  <span className="text-green-700 dark:text-green-400 font-medium">Discount</span>
+                  <span className="text-green-700 dark:text-green-400 font-semibold">-{formatPrice(totals.discount)}</span>
+                </div>
+              )}
 
-                return (
-                  <>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-gray-400 font-medium">Subtotal</span>
-                      <span className="text-slate-900 dark:text-white font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
-                    </div>
-                    {discount > 0 && (
-                      <div className="flex justify-between text-sm bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800">
-                        <span className="text-green-700 dark:text-green-400 font-medium">Discount (Buy 2 Get 1 Free)</span>
-                        <span className="text-green-700 dark:text-green-400 font-semibold">-₹{discount.toLocaleString('en-IN')}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
-                      <span className="text-slate-900 dark:text-white font-bold">Total</span>
-                      <span className="text-lg font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">₹{total.toLocaleString('en-IN')}</span>
-                    </div>
-                  </>
-                );
-              })()}
+              {totals.promotionText && (
+                <div className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-2">
+                  {totals.promotionText}
+                </div>
+              )}
+
+              <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
+                <span className="text-slate-900 dark:text-white font-bold">Total</span>
+                <span className="text-lg font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">{formatPrice(totals.total)}</span>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -340,12 +323,12 @@ export function CartDrawer() {
                 <Link href="/checkout">Proceed to Checkout</Link>
               </Button>
               <Button 
+                type="button"
                 variant="secondary"
-                asChild 
                 className="w-full border-2 border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-semibold py-3"
                 onClick={closeCart}
               >
-                <Link href="/cart">View Full Cart</Link>
+                Continue Shopping
               </Button>
             </div>
           </div>

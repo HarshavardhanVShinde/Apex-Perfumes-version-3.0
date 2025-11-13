@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Star, Heart, ShoppingBag, Truck, Shield, RotateCcw, ChevronRight, Sparkles, Flame, Award } from 'lucide-react';
@@ -9,42 +9,11 @@ import { Badge } from '@/components/ui/Badge';
 import { ProductCard } from '@/components/commerce/ProductCard';
 import { formatPrice, formatRating } from '@/lib/utils';
 import { getProduct, getProducts } from '@/lib/supabase/products';
+import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 import type { Database } from '@/types/supabase';
 import type { Product as AppProduct } from '@/types';
 
 type SupabaseProduct = Database['public']['Tables']['products']['Row'];
-
-// Convert Supabase product to app Product type
-function convertSupabaseProduct(sp: SupabaseProduct): AppProduct {
-  const notes = sp.notes && typeof sp.notes === 'object' ? (sp.notes as any) : {};
-  const category = (sp.category === 'men' || sp.category === 'women' || sp.category === 'unisex' || sp.category === 'solid')
-    ? sp.category
-    : 'unisex';
-  
-  return {
-    id: sp.id,
-    name: sp.name,
-    brand: sp.brand,
-    price: sp.price,
-    originalPrice: sp.original_price || undefined,
-    images: sp.images || [],
-    category: category as AppProduct['category'],
-    type: (sp.type || 'EDP') as AppProduct['type'],
-    notes: {
-      top: (notes.top as string[]) || [],
-      heart: (notes.heart as string[]) || [],
-      base: (notes.base as string[]) || [],
-    },
-    longevity: sp.longevity || 0,
-    sillage: (sp.sillage || 'moderate') as AppProduct['sillage'],
-    rating: sp.rating || 0,
-    stock: sp.stock || 0,
-    description: sp.description || '',
-    isNew: sp.is_new || false,
-    isBestSeller: sp.is_best_seller || false,
-    isOnSale: sp.is_on_sale || false,
-  };
-}
 
 export function ProductDetail() {
   const params = useParams();
@@ -91,7 +60,7 @@ export function ProductDetail() {
           const related = response.products
             .filter(p => p.id !== id)
             .slice(0, 4)
-            .map(convertSupabaseProduct);
+            .map(mapProductRowToProduct);
           setRelatedProducts(related);
         } catch (err) {
           console.error('Error fetching related products:', err);
@@ -147,7 +116,7 @@ export function ProductDetail() {
   const handleAddToCart = async () => {
     if (product) {
       try {
-        const appProduct = convertSupabaseProduct(product);
+        const appProduct = mapProductRowToProduct(product);
         await addItem(appProduct, quantity, selectedSize);
         console.log('✅ Added to cart:', product.name);
       } catch (error) {

@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -31,7 +31,7 @@ function loadRazorpay(): Promise<boolean> {
 
 export function Checkout() {
   const router = useRouter();
-  const { items, getSubtotal, getTax, getTotal, clearCart } = useCartStore();
+  const { items, getSubtotal, getTax, getTotal, clearCart, openCart } = useCartStore();
   const { user } = useAuthStore();
 
   const {
@@ -175,16 +175,23 @@ export function Checkout() {
     );
   }
 
+  const handleBackToCart = useCallback(() => {
+    openCart();
+  }, [openCart]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center mb-12">
-          <Button variant="ghost" asChild className="text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30">
-            <Link href="/cart">
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back to Cart
-            </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            className="text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+            onClick={handleBackToCart}
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Cart
           </Button>
         </div>
 

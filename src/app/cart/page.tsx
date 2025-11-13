@@ -1,6 +1,5 @@
-import React from 'react';
-import { Cart } from '@/components/pages/Cart';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return <Cart />;
+  redirect('/');
 }

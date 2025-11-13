@@ -1,10 +1,12 @@
 "use client";
-import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { ProductCard } from '@/components/commerce/ProductCard';
 import type { Product } from '@/types';
 import { getProducts } from '@/lib/supabase/products';
-import { useAuthStore } from '@/stores/auth';
+import { mapProductRowToProduct } from '@/lib/supabase/mappers';
+import { Button } from '@/components/ui/Button';
+import { getFallbackProductsByCategory } from '@/lib/products/fallback';
 
 // Supabase-backed products state
 const initialProducts: Product[] = [];
@@ -22,69 +24,61 @@ export function Collections() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState<boolean>(true);
-  const { user } = useAuthStore();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   // Get category from URL parameters
-  const category = (params.category as string)?.toLowerCase() || 'men';
-  const categoryTitle = CATEGORY_TITLES[category] || "Fragrances";
-  const categoryDescription = category === 'men' 
+  const rawCategory = (params.category as string)?.toLowerCase() || 'men';
+  const activeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'men';
+  const categoryTitle = CATEGORY_TITLES[activeCategory] || "Fragrances";
+  const categoryDescription = activeCategory === 'men' 
     ? 'Bold and sophisticated fragrances for the modern man'
     : 'Elegant and captivating scents for every occasion';
 
+  const fallbackProductsForCategory = useMemo(
+    () => getFallbackProductsByCategory(activeCategory as Product['category']),
+    [activeCategory]
+  );
+
   // Validate category - redirect to /collections/men if invalid
   useEffect(() => {
-    if (!VALID_CATEGORIES.includes(category)) {
+    if (!VALID_CATEGORIES.includes(rawCategory)) {
       router.replace('/collections/men');
     }
-  }, [category, router]);
-
-  // Map Supabase product row into app Product type
-  function mapRowToProduct(row: any): Product {
-    const notes = row.notes || { top: [], heart: [], base: [] };
-    return {
-      id: String(row.id),
-      name: row.name || '',
-      brand: row.brand || '',
-      price: Number(row.price ?? 0),
-      originalPrice: row.original_price ?? undefined,
-      images: Array.isArray(row.images) ? row.images : [],
-      category: (row.category || category) as Product['category'],
-      type: (row.type || 'EDP') as Product['type'],
-      notes: {
-        top: Array.isArray(notes.top) ? notes.top : [],
-        heart: Array.isArray(notes.heart) ? notes.heart : [],
-        base: Array.isArray(notes.base) ? notes.base : [],
-      },
-      longevity: Number(row.longevity ?? 0),
-      sillage: (row.sillage || 'moderate') as Product['sillage'],
-      rating: Number(row.rating ?? 0),
-      stock: Number(row.stock ?? 0),
-      description: row.description || '',
-      isNew: !!row.is_new,
-      isBestSeller: !!row.is_best_seller,
-      isOnSale: !!row.is_on_sale,
-    };
-  }
+  }, [rawCategory, router]);
 
   // Fetch products by category from Supabase
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
+    setErrorMessage(null);
     const fetchData = async () => {
       try {
         const resp = await getProducts(
           {
-            category: category, // Dynamic category
+            category: activeCategory,
           },
           1,
           100
         );
-        const mapped = (resp.products || []).map(mapRowToProduct);
-        if (isMounted) {
+        const mapped = (resp.products ?? []).map(mapProductRowToProduct);
+        if (!isMounted) {
+          return;
+        }
+
+        if (mapped.length > 0) {
           setProducts(mapped);
+          setErrorMessage(null);
+        } else {
+          setProducts([...fallbackProductsForCategory]);
+          setErrorMessage('Showing cached products while live data refreshes.');
         }
       } catch (e) {
         console.error('Failed to load products', e);
+        if (isMounted) {
+          setProducts([...fallbackProductsForCategory]);
+          setErrorMessage('Unable to load live products. Showing cached catalog for now.');
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -93,7 +87,13 @@ export function Collections() {
     return () => {
       isMounted = false;
     };
-  }, [category, user]); // Re-run when category or auth state changes
+  }, [activeCategory, fallbackProductsForCategory, reloadToken]);
+
+  const handleRetry = useCallback(() => {
+    if (!loading) {
+      setReloadToken(prev => prev + 1);
+    }
+  }, [loading]);
 
   return (
     <div className="min-h-screen">
@@ -107,7 +107,7 @@ export function Collections() {
         
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <span className="text-amber-400 text-sm font-semibold tracking-widest">
-            {category === 'men' ? 'FOR HIM' : 'FOR HER'}
+            {activeCategory === 'men' ? 'FOR HIM' : 'FOR HER'}
           </span>
           <h1 className="text-5xl md:text-6xl font-bold tracking-wider text-white mb-4 mt-4">
             {categoryTitle}
@@ -121,6 +121,21 @@ export function Collections() {
       {/* Products Grid Section */}
       <section className="py-20 px-4 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto">
+          {errorMessage && (
+            <div className="mb-8 flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-amber-700 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-300">
+              <p className="text-sm font-medium">{errorMessage}</p>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleRetry}
+                disabled={loading}
+                className="border-amber-400 text-amber-700 dark:text-amber-300"
+              >
+                {loading ? 'Refreshing...' : 'Retry Now'}
+              </Button>
+            </div>
+          )}
+
           {/* Products Grid */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

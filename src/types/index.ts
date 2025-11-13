@@ -17,6 +17,7 @@ export interface Product {
   rating: number;
   stock: number;
   description: string;
+  sizes?: Record<string, { price?: number }>;
   isNew?: boolean;
   isBestSeller?: boolean;
   isOnSale?: boolean;
@@ -26,7 +27,9 @@ export interface CartItem {
   id: string;
   product: Product;
   quantity: number;
-  selectedSize?: string; // e.g., '50ml', '100ml'
+  selectedSize?: string | null; // e.g., '50ml', '100ml'
+  unitPrice?: number;
+  lineTotal?: number;
 }
 
 export interface User {

@@ -15,7 +15,7 @@ interface CartItemDisplay {
   product_price: number;
   product_images: string[];
   quantity: number;
-  selected_size: string;
+  selected_size: string | null;
   total_price: number;
 }
 
@@ -62,7 +62,7 @@ export function Cart() {
 
       try {
         setLoading(true);
-        
+
         // Initial fetch
         await refreshCart(user.id);
 
@@ -103,16 +103,27 @@ export function Cart() {
     };
   }, [user?.id, isInitialized]);
 
-  const handleQuantityChange = async (productId: string, selectedSize: string, newQuantity: number) => {
+  const handleQuantityChange = async (cartItem: CartItemDisplay, newQuantity: number) => {
     if (!user?.id) return;
 
     try {
       if (newQuantity <= 0) {
-        await removeFromCart(user.id, productId, selectedSize);
+        await removeFromCart({
+          userId: user.id,
+          cartItemId: cartItem.id,
+          productId: cartItem.product_id,
+          selectedSize: cartItem.selected_size,
+        });
       } else {
-        await updateCartItemQuantity(user.id, productId, newQuantity, selectedSize);
+        await updateCartItemQuantity({
+          userId: user.id,
+          cartItemId: cartItem.id,
+          productId: cartItem.product_id,
+          selectedSize: cartItem.selected_size,
+          quantity: newQuantity,
+        });
       }
-      
+
       // Reload cart data
       await refreshCart(user.id);
     } catch (error) {
@@ -120,12 +131,17 @@ export function Cart() {
     }
   };
 
-  const handleRemove = async (productId: string, selectedSize: string) => {
+  const handleRemove = async (cartItem: CartItemDisplay) => {
     if (!user?.id) return;
 
     try {
-      await removeFromCart(user.id, productId, selectedSize);
-      
+      await removeFromCart({
+        userId: user.id,
+        cartItemId: cartItem.id,
+        productId: cartItem.product_id,
+        selectedSize: cartItem.selected_size,
+      });
+
       // Reload cart data
       await refreshCart(user.id);
     } catch (error) {
@@ -209,96 +225,100 @@ export function Cart() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-3 md:space-y-4">
-            {cartItems.map(item => (
-              <div 
-                key={`${item.product_id}-${item.selected_size}`}
-                className="bg-white dark:bg-slate-900 rounded-lg md:rounded-xl p-3 md:p-6 border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-6">
-                  {/* Product Image */}
-                  <div className="shrink-0 self-center sm:self-start">
-                    <img
-                      src={item.product_images && item.product_images.length > 0
-                        ? item.product_images[0]
-                        : '/perfume-logo.png'
-                      }
-                      alt={item.product_name}
-                      className="w-20 h-20 md:w-32 md:h-32 object-cover rounded-lg bg-slate-100 dark:bg-slate-800 shadow-md hover:shadow-lg transition-shadow"
-                      onError={(e) => {
-                        e.currentTarget.src = '/perfume-logo.png';
-                      }}
-                    />
-                  </div>
+            {cartItems.map(item => {
+              const sizeLabel = item.selected_size || '100ml';
 
-                  {/* Product Details */}
-                  <div className="flex-1 min-w-0">
-                    <Link href={`/product/${item.product_id}`} className="block mb-2 md:mb-3 group">
-                      <h3 className="font-bold text-base md:text-xl text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2">
-                        {item.product_name}
-                      </h3>
-                    </Link>
-
-                    {/* Size Badge & Price */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                      <span className="bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-700 dark:text-amber-300 text-xs md:text-sm font-bold px-2 md:px-4 py-1 md:py-2 rounded-full border border-amber-200 dark:border-amber-800 w-fit">
-                        Size: {item.selected_size}
-                      </span>
-                      <span className="text-amber-600 dark:text-amber-400 font-bold text-sm md:text-lg">
-                        {formatPrice(item.product_price)}
-                      </span>
+              return (
+                <div
+                  key={item.id || `${item.product_id}-${sizeLabel}`}
+                  className="bg-white dark:bg-slate-900 rounded-lg md:rounded-xl p-3 md:p-6 border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="flex flex-col sm:flex-row gap-3 md:gap-6">
+                    {/* Product Image */}
+                    <div className="shrink-0 self-center sm:self-start">
+                      <img
+                        src={item.product_images && item.product_images.length > 0
+                          ? item.product_images[0]
+                          : '/perfume-logo.png'
+                        }
+                        alt={item.product_name}
+                        className="w-20 h-20 md:w-32 md:h-32 object-cover rounded-lg bg-slate-100 dark:bg-slate-800 shadow-md hover:shadow-lg transition-shadow"
+                        onError={(e) => {
+                          e.currentTarget.src = '/perfume-logo.png';
+                        }}
+                      />
                     </div>
 
-                    {/* Quantity Controls & Price - Mobile Stack */}
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      {/* Quantity Selector */}
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <span className="text-xs md:text-sm font-semibold text-slate-700 dark:text-gray-300">
-                          Qty:
+                    {/* Product Details */}
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/product/${item.product_id}`} className="block mb-2 md:mb-3 group">
+                        <h3 className="font-bold text-base md:text-xl text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2">
+                          {item.product_name}
+                        </h3>
+                      </Link>
+
+                      {/* Size Badge & Price */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                        <span className="bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-700 dark:text-amber-300 text-xs md:text-sm font-bold px-2 md:px-4 py-1 md:py-2 rounded-full border border-amber-200 dark:border-amber-800 w-fit">
+                          Size: {sizeLabel}
                         </span>
-                        <div className="flex items-center border-2 border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                          <button
-                            onClick={() => handleQuantityChange(item.product_id, item.selected_size, item.quantity - 1)}
-                            className="px-2 md:px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-slate-900 dark:text-white text-sm md:text-base"
-                          >
-                            −
-                          </button>
-                          <span className="px-3 md:px-6 py-2 min-w-[3rem] md:min-w-[4rem] text-center font-bold text-slate-900 dark:text-white text-sm md:text-base border-l border-r border-slate-300 dark:border-slate-700">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleQuantityChange(item.product_id, item.selected_size, item.quantity + 1)}
-                            className="px-2 md:px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-slate-900 dark:text-white text-sm md:text-base"
-                          >
-                            +
-                          </button>
-                        </div>
+                        <span className="text-amber-600 dark:text-amber-400 font-bold text-sm md:text-lg">
+                          {formatPrice(item.product_price)}
+                        </span>
                       </div>
 
-                      {/* Price and Remove */}
-                      <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-6">
-                        <div className="text-right">
-                          <p className="text-lg md:text-3xl font-bold text-slate-900 dark:text-white">
-                            {formatPrice(item.total_price)}
-                          </p>
-                          <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
-                            {formatPrice(item.product_price)} × {item.quantity}
-                          </p>
+                      {/* Quantity Controls & Price - Mobile Stack */}
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        {/* Quantity Selector */}
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <span className="text-xs md:text-sm font-semibold text-slate-700 dark:text-gray-300">
+                            Qty:
+                          </span>
+                          <div className="flex items-center border-2 border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                            <button
+                              onClick={() => handleQuantityChange(item, item.quantity - 1)}
+                              className="px-2 md:px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-slate-900 dark:text-white text-sm md:text-base"
+                            >
+                              −
+                            </button>
+                            <span className="px-3 md:px-6 py-2 min-w-[3rem] md:min-w-[4rem] text-center font-bold text-slate-900 dark:text-white text-sm md:text-base border-l border-r border-slate-300 dark:border-slate-700">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(item, item.quantity + 1)}
+                              className="px-2 md:px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-slate-900 dark:text-white text-sm md:text-base"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemove(item.product_id, item.selected_size)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors rounded-lg p-2 md:p-3"
-                          title="Remove item from cart"
-                        >
-                          <Trash2 className="h-4 w-4 md:h-6 md:w-6" />
-                        </Button>
+
+                        {/* Price and Remove */}
+                        <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-6">
+                          <div className="text-right">
+                            <p className="text-lg md:text-3xl font-bold text-slate-900 dark:text-white">
+                              {formatPrice(item.total_price)}
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
+                              {formatPrice(item.product_price)} × {item.quantity}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemove(item)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors rounded-lg p-2 md:p-3"
+                            title="Remove item from cart"
+                          >
+                            <Trash2 className="h-4 w-4 md:h-6 md:w-6" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Order Summary - Mobile Responsive */}
@@ -339,8 +359,8 @@ export function Cart() {
               </div>
 
               <div className="space-y-2 md:space-y-3">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3 md:py-4 text-sm md:text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                   asChild
                 >
@@ -349,8 +369,8 @@ export function Cart() {
                   </Link>
                 </Button>
 
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="secondary"
                   className="w-full border-2 border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-bold py-3 md:py-4 text-sm md:text-lg"
                   asChild

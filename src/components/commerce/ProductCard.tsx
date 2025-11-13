@@ -18,6 +18,11 @@ export function ProductCard({ product }: ProductCardProps) {
   const { toggleItem, isInWishlist } = useWishlistStore();
   const [isWishlisted, setIsWishlisted] = useState(false);
 
+  const getImageForIndex = (index: number) => {
+    const image = product.images[index] ?? product.images[0];
+    return image ?? '/perfume-logo.png';
+  };
+
   // Update wishlist state when store changes
   useEffect(() => {
     setIsWishlisted(isInWishlist(product.id));
@@ -65,11 +70,14 @@ export function ProductCard({ product }: ProductCardProps) {
     >
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={product.images[currentImageIndex]}
+          src={getImageForIndex(currentImageIndex)}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onError={(event) => {
+            event.currentTarget.src = '/perfume-logo.png';
+          }}
         />
         
         {/* Badges */}

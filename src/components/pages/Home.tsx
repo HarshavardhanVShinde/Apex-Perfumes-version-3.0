@@ -1,12 +1,13 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Star, Shield, Truck, Award, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ProductCard } from '@/components/commerce/ProductCard';
-import { getFeaturedProducts } from '@/lib/supabase/products';
-import { getProducts } from '@/lib/supabase/products';
+import { getFeaturedProducts, getProducts } from '@/lib/supabase/products';
+import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 import type { Product } from '@/types';
+import { fallbackSections as FALLBACK_SECTIONS } from '@/lib/products/fallback';
 
 export function Home() {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
@@ -14,56 +15,124 @@ export function Home() {
   const [womenProducts, setWomenProducts] = useState<Product[]>([]);
   const [newProducts, setNewProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        // Convert Supabase products to app Product type
-        const convertProduct = (p: any): Product => ({
-          id: p.id,
-          name: p.name,
-          brand: p.brand,
-          price: p.price,
-          originalPrice: p.original_price,
-          images: p.images || [],
-          category: p.category,
-          type: p.type,
-          notes: p.notes,
-          longevity: p.longevity,
-          sillage: p.sillage,
-          rating: p.rating,
-          stock: p.stock,
-          description: p.description,
-          isNew: p.is_new,
-          isBestSeller: p.is_best_seller,
-          isOnSale: p.is_on_sale,
-        });
+  const loadProducts = useCallback(async () => {
+    if (!mountedRef.current) return;
 
-        // Load featured products
-        const { newProducts: newItems, bestSellers: bestSellerItems } = await getFeaturedProducts();
-        setBestSellers(bestSellerItems.slice(0, 4).map(convertProduct));
-        setNewProducts(newItems.slice(0, 4).map(convertProduct));
+    setLoading(true);
+    setErrorMessage(null);
 
-        // Load men's products
-        const menResponse = await getProducts({ category: 'men' });
-        setMenProducts(menResponse.products.slice(0, 4).map(convertProduct));
+    try {
+      const [featuredResult, menResult, womenResult] = await Promise.allSettled([
+        getFeaturedProducts(),
+        getProducts({ category: 'men' }),
+        getProducts({ category: 'women' }),
+      ]);
 
-        // Load women's products
-        const womenResponse = await getProducts({ category: 'women' });
-        setWomenProducts(womenResponse.products.slice(0, 4).map(convertProduct));
-      } catch (error) {
-        console.error('Failed to load products:', error);
-        setBestSellers([]);
-        setNewProducts([]);
-        setMenProducts([]);
-        setWomenProducts([]);
-      } finally {
+      if (!mountedRef.current) {
+        return;
+      }
+
+      let usedFallback = false;
+
+      if (featuredResult.status === 'fulfilled') {
+        const { newProducts: newItems, bestSellers: bestSellerItems } = featuredResult.value;
+        const bestSellerProducts = (bestSellerItems ?? []).slice(0, 4).map(mapProductRowToProduct);
+        const newestProducts = (newItems ?? []).slice(0, 4).map(mapProductRowToProduct);
+
+        if (bestSellerProducts.length > 0) {
+          setBestSellers(bestSellerProducts);
+        } else {
+          setBestSellers([...FALLBACK_SECTIONS.bestSellers]);
+          usedFallback = true;
+        }
+
+        if (newestProducts.length > 0) {
+          setNewProducts(newestProducts);
+        } else {
+          setNewProducts([...FALLBACK_SECTIONS.newProducts]);
+          usedFallback = true;
+        }
+      } else {
+        console.error('Failed to load featured products:', featuredResult.reason);
+        setBestSellers([...FALLBACK_SECTIONS.bestSellers]);
+        setNewProducts([...FALLBACK_SECTIONS.newProducts]);
+        usedFallback = true;
+      }
+
+      if (menResult.status === 'fulfilled') {
+        const menProductList = (menResult.value.products ?? []).slice(0, 4).map(mapProductRowToProduct);
+        if (menProductList.length > 0) {
+          setMenProducts(menProductList);
+        } else {
+          setMenProducts([...FALLBACK_SECTIONS.men]);
+          usedFallback = true;
+        }
+      } else {
+        console.error('Failed to load men products:', menResult.reason);
+        setMenProducts([...FALLBACK_SECTIONS.men]);
+        usedFallback = true;
+      }
+
+      if (womenResult.status === 'fulfilled') {
+        const womenProductList = (womenResult.value.products ?? []).slice(0, 4).map(mapProductRowToProduct);
+        if (womenProductList.length > 0) {
+          setWomenProducts(womenProductList);
+        } else {
+          setWomenProducts([...FALLBACK_SECTIONS.women]);
+          usedFallback = true;
+        }
+      } else {
+        console.error('Failed to load women products:', womenResult.reason);
+        setWomenProducts([...FALLBACK_SECTIONS.women]);
+        usedFallback = true;
+      }
+
+      if (
+        featuredResult.status === 'rejected' &&
+        menResult.status === 'rejected' &&
+        womenResult.status === 'rejected'
+      ) {
+        setErrorMessage('Unable to reach Supabase right now. Showing our offline catalog.');
+      } else if (usedFallback) {
+        setErrorMessage('Some sections are using cached data while live products refresh.');
+      } else {
+        setErrorMessage(null);
+      }
+    } catch (error) {
+      console.error('Failed to load products:', error);
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setBestSellers([...FALLBACK_SECTIONS.bestSellers]);
+      setNewProducts([...FALLBACK_SECTIONS.newProducts]);
+      setMenProducts([...FALLBACK_SECTIONS.men]);
+      setWomenProducts([...FALLBACK_SECTIONS.women]);
+      setErrorMessage('Unable to load live products. Showing cached catalog for now.');
+    } finally {
+      if (mountedRef.current) {
         setLoading(false);
       }
-    };
-
-    loadProducts();
+    }
   }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    void loadProducts();
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [loadProducts]);
+
+  const handleRetry = useCallback(() => {
+    if (!loading) {
+      void loadProducts();
+    }
+  }, [loadProducts, loading]);
 
   const categories = [
     {
@@ -166,6 +235,21 @@ export function Home() {
               Our most coveted scents, chosen by connoisseurs worldwide
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="mb-10 flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-amber-700 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-300">
+              <p className="text-sm font-medium">{errorMessage}</p>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleRetry}
+                disabled={loading}
+                className="border-amber-400 text-amber-700 dark:text-amber-300"
+              >
+                {loading ? 'Refreshing...' : 'Retry Now'}
+              </Button>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {loading ? (
