@@ -310,7 +310,7 @@ export function Checkout() {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full"
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Processing...' : `Place Order - ${formatPrice(finalTotal)}`}
@@ -320,8 +320,8 @@ export function Checkout() {
 
           {/* Order Summary */}
           <div>
-            <div className="bg-white dark:bg-primary-900 rounded-lg p-6 shadow-sm border border-primary-100 dark:border-primary-800 sticky top-8">
-              <h2 className="text-xl font-semibold text-primary-950 dark:text-neutral-100 mb-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xl border border-slate-100 dark:border-slate-800 sticky top-8">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">
                 Order Summary
               </h2>
 
@@ -337,14 +337,14 @@ export function Checkout() {
                       className="object-cover rounded-md"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-primary-950 dark:text-neutral-100 truncate">
+                      <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">
                         {item.product.name}
                       </h3>
-                      <p className="text-xs text-primary-600 dark:text-neutral-400">
+                      <p className="text-xs text-slate-600 dark:text-gray-400">
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    <span className="text-sm font-medium text-primary-950 dark:text-neutral-100">
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">
                       {formatPrice(item.product.price * item.quantity)}
                     </span>
                   </div>
@@ -354,30 +354,30 @@ export function Checkout() {
               {/* Totals */}
               <div className="space-y-2 mb-6">
                 <div className="flex justify-between text-sm">
-                  <span className="text-primary-600 dark:text-neutral-400">Subtotal</span>
-                  <span className="text-primary-950 dark:text-neutral-100">
+                  <span className="text-slate-600 dark:text-gray-400">Subtotal</span>
+                  <span className="text-slate-900 dark:text-white">
                     {formatPrice(getSubtotal())}
                   </span>
                 </div>
                 
                 <div className="flex justify-between text-sm">
-                  <span className="text-primary-600 dark:text-neutral-400">Tax</span>
-                  <span className="text-primary-950 dark:text-neutral-100">
+                  <span className="text-slate-600 dark:text-gray-400">Tax</span>
+                  <span className="text-slate-900 dark:text-white">
                     {formatPrice(getTax())}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-primary-600 dark:text-neutral-400">Shipping</span>
-                  <span className="text-primary-950 dark:text-neutral-100">
+                  <span className="text-slate-600 dark:text-gray-400">Shipping</span>
+                  <span className="text-slate-900 dark:text-white">
                     {shipping === 0 ? 'Free' : formatPrice(shipping)}
                   </span>
                 </div>
                 
-                <div className="border-t border-primary-200 dark:border-primary-800 pt-2">
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-2">
                   <div className="flex justify-between text-lg font-semibold">
-                    <span className="text-primary-950 dark:text-neutral-100">Total</span>
-                    <span className="text-primary-950 dark:text-neutral-100">
+                    <span className="text-slate-900 dark:text-white">Total</span>
+                    <span className="text-slate-900 dark:text-white">
                       {formatPrice(finalTotal)}
                     </span>
                   </div>
@@ -385,7 +385,7 @@ export function Checkout() {
               </div>
 
               {/* Security Badge */}
-              <div className="text-center text-sm text-primary-600 dark:text-neutral-400">
+              <div className="text-center text-sm text-slate-600 dark:text-gray-400">
                 <Lock className="h-4 w-4 inline mr-1" />
                 Your payment information is secure
               </div>

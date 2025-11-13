@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cart';
 import { Button } from '@/components/ui/Button';
@@ -27,6 +27,28 @@ export function CartDrawer() {
   } = useCartStore();
 
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Click outside handler
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
+        closeCart();
+      }
+    }
+
+    // Add small delay to avoid immediate close when opening
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, closeCart]);
 
   const buildLoadingKey = (cartItemId: string, size: string | null) => `${cartItemId}-${size ?? 'default'}`;
 
@@ -108,37 +130,45 @@ export function CartDrawer() {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={closeCart}
       />
       
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-slate-950 shadow-2xl flex flex-col border-l border-gray-200 dark:border-slate-800">
+      <div 
+        ref={drawerRef}
+        className="fixed right-0 top-0 h-full w-full max-w-md bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 animate-slide-in-right"
+      >
         {/* Header - Premium Design */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900 dark:to-slate-800">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 via-amber-50/30 to-slate-50 dark:from-slate-900 dark:via-amber-900/10 dark:to-slate-900">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-amber-600 dark:from-white dark:to-amber-400 bg-clip-text text-transparent">
               Shopping Cart
             </h2>
             <p className="text-sm text-amber-600 dark:text-amber-400 font-semibold mt-1">
               {items.length} {items.length === 1 ? 'item' : 'items'}
             </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={closeCart} className="hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={closeCart} 
+            className="hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-full transition-all duration-300"
+          >
             <X className="h-6 w-6 text-slate-600 dark:text-gray-400" />
           </Button>
         </div>
 
         {/* Cart items */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-950">
           {/* Error display */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-400 font-medium">{error}</p>
                 <button 
                   onClick={clearError}
-                  className="text-red-500 hover:text-red-700 dark:text-red-400"
+                  className="text-red-500 hover:text-red-700 dark:text-red-400 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -149,25 +179,25 @@ export function CartDrawer() {
           {/* Loading state */}
           {isLoading ? (
             <div className="text-center py-12 flex flex-col items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
-              <p className="text-slate-600 dark:text-gray-400 mb-4 font-medium mt-4">
+              <div className="animate-spin rounded-full h-14 w-14 border-4 border-t-amber-500 border-r-amber-500 border-b-transparent border-l-transparent"></div>
+              <p className="text-slate-600 dark:text-gray-400 mb-4 font-medium mt-6">
                 Loading your cart...
               </p>
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-12 flex flex-col items-center justify-center h-full">
-              <div className="mb-4">
-                <ShoppingBag className="h-16 w-16 text-gray-300 dark:text-slate-600 mx-auto mb-4 opacity-50" />
+            <div className="text-center py-16 flex flex-col items-center justify-center h-full">
+              <div className="mb-6 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 p-8 rounded-full">
+                <ShoppingBag className="h-20 w-20 text-slate-400 dark:text-slate-600" />
               </div>
-              <p className="text-slate-600 dark:text-gray-400 mb-4 font-medium">
+              <p className="text-slate-900 dark:text-white mb-2 font-bold text-xl">
                 Your cart is empty
               </p>
-              <p className="text-sm text-slate-500 dark:text-gray-500 mb-6">
+              <p className="text-sm text-slate-500 dark:text-gray-500 mb-8">
                 Discover our premium fragrances
               </p>
               <Button 
                 onClick={closeCart}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Continue Shopping
               </Button>
@@ -185,32 +215,32 @@ export function CartDrawer() {
                 const coverImage = item.product.images[0] ?? '/perfume-logo.png';
 
                 return (
-                  <div key={itemKey} className="flex space-x-4 border-b border-gray-200 dark:border-slate-800 pb-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 -mx-2 px-2 py-2 rounded-lg transition-colors">
+                  <div key={itemKey} className="flex space-x-4 border-b border-slate-200 dark:border-slate-800 pb-4 hover:bg-slate-50 dark:hover:bg-slate-900/50 -mx-2 px-3 py-3 rounded-xl transition-all duration-300 group">
                     <div className="relative">
                       <Image
                         src={coverImage}
                         alt={item.product.name}
-                        width={80}
-                        height={80}
-                        className="object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                        width={90}
+                        height={90}
+                        className="object-cover rounded-xl shadow-md group-hover:shadow-xl transition-shadow duration-300 border border-slate-200 dark:border-slate-700"
                       />
                       {item.quantity > 1 && (
-                        <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                        <div className="absolute -top-2 -right-2 bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg">
                           {item.quantity}
                         </div>
                       )}
                       {isItemLoading && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-white border-r-white border-b-transparent border-l-transparent"></div>
                         </div>
                       )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900 dark:text-white text-sm truncate">
+                      <h3 className="font-bold text-slate-900 dark:text-white text-sm truncate">
                         {item.product.name}
                       </h3>
-                      <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
                         {item.product.type}
                       </p>
                       
@@ -221,7 +251,7 @@ export function CartDrawer() {
                           value={selectedSize}
                           onChange={(e) => handleSizeChange(item, e.target.value)}
                           disabled={isItemLoading}
-                          className="px-2 py-1 text-xs border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium disabled:opacity-50 hover:border-amber-400 dark:hover:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-colors"
+                          className="px-2 py-1.5 text-xs border-2 border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold disabled:opacity-50 hover:border-amber-400 dark:hover:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
                         >
                           {sizeOptions.map(size => {
                             const priceForSize = item.product.sizes?.[size]?.price;
@@ -241,41 +271,41 @@ export function CartDrawer() {
                       </div>
 
                       {/* Quantity controls */}
-                      <div className="flex items-center space-x-1 mt-2 bg-gray-100 dark:bg-slate-800 rounded-lg p-1 w-fit">
+                      <div className="flex items-center space-x-1.5 mt-3 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-fit shadow-inner">
                         <button
                           onClick={() => handleQuantityChange(item, item.quantity - 1)}
                           disabled={isItemLoading}
-                          className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-50 text-slate-600 dark:text-gray-400"
+                          className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all disabled:opacity-50 text-slate-700 dark:text-gray-300"
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus className="h-3.5 w-3.5" />
                         </button>
-                        <span className="text-sm font-semibold w-6 text-center text-slate-900 dark:text-white">{item.quantity}</span>
+                        <span className="text-sm font-bold w-8 text-center text-slate-900 dark:text-white">{item.quantity}</span>
                         <button
                           onClick={() => handleQuantityChange(item, item.quantity + 1)}
                           disabled={isItemLoading}
-                          className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors disabled:opacity-50 text-slate-600 dark:text-gray-400"
+                          className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all disabled:opacity-50 text-slate-700 dark:text-gray-300"
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-3.5 w-3.5" />
                         </button>
-                        <div className="border-l border-gray-300 dark:border-slate-700 mx-1"></div>
+                        <div className="border-l-2 border-slate-300 dark:border-slate-700 mx-1 h-6"></div>
                         <button
                           onClick={() => handleRemoveItem(item)}
                           disabled={isItemLoading}
-                          className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded transition-colors disabled:opacity-50"
+                          className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded-md transition-all disabled:opacity-50"
                           title="Remove item"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </div>
                     
                     <div className="text-right flex flex-col justify-between">
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white text-sm">
+                        <p className="font-bold text-slate-900 dark:text-white text-base">
                           {formatPrice(lineTotal)}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-gray-500">
-                          {formatPrice(unitPrice)} / unit
+                        <p className="text-xs text-slate-500 dark:text-gray-500 mt-0.5">
+                          {formatPrice(unitPrice)} ea.
                         </p>
                       </div>
                     </div>
@@ -288,36 +318,36 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-gray-200 dark:border-slate-800 p-6 bg-gradient-to-t from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 space-y-4">
-            <div className="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-lg border border-gray-200 dark:border-slate-800">
+          <div className="border-t border-slate-200 dark:border-slate-700 p-6 bg-gradient-to-t from-slate-100 to-white dark:from-slate-900 dark:to-slate-950 space-y-4 shadow-2xl">
+            <div className="space-y-3 bg-white dark:bg-slate-900 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-800 shadow-lg">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600 dark:text-gray-400 font-medium">Subtotal</span>
-                <span className="text-slate-900 dark:text-white font-semibold">{formatPrice(totals.subtotal)}</span>
+                <span className="text-slate-600 dark:text-gray-400 font-semibold">Subtotal</span>
+                <span className="text-slate-900 dark:text-white font-bold">{formatPrice(totals.subtotal)}</span>
               </div>
 
               {totals.discount > 0 && (
-                <div className="flex justify-between text-sm bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800">
-                  <span className="text-green-700 dark:text-green-400 font-medium">Discount</span>
-                  <span className="text-green-700 dark:text-green-400 font-semibold">-{formatPrice(totals.discount)}</span>
+                <div className="flex justify-between text-sm bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-2 border-green-200 dark:border-green-800">
+                  <span className="text-green-700 dark:text-green-400 font-semibold">Discount</span>
+                  <span className="text-green-700 dark:text-green-400 font-bold">-{formatPrice(totals.discount)}</span>
                 </div>
               )}
 
               {totals.promotionText && (
-                <div className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-2">
-                  {totals.promotionText}
+                <div className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-3 font-semibold">
+                  ✓ {totals.promotionText}
                 </div>
               )}
 
-              <div className="flex justify-between pt-3 border-t border-gray-200 dark:border-slate-700">
-                <span className="text-slate-900 dark:text-white font-bold">Total</span>
-                <span className="text-lg font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">{formatPrice(totals.total)}</span>
+              <div className="flex justify-between pt-3 border-t-2 border-slate-200 dark:border-slate-700">
+                <span className="text-slate-900 dark:text-white font-bold text-base">Total</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">{formatPrice(totals.total)}</span>
               </div>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Button 
                 asChild 
-                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold py-3 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3.5 text-base transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
                 onClick={closeCart}
               >
                 <Link href="/checkout">Proceed to Checkout</Link>
@@ -325,7 +355,7 @@ export function CartDrawer() {
               <Button 
                 type="button"
                 variant="secondary"
-                className="w-full border-2 border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-semibold py-3"
+                className="w-full border-2 border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-bold py-3 transition-all duration-300"
                 onClick={closeCart}
               >
                 Continue Shopping

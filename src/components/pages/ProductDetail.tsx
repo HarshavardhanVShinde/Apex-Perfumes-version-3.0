@@ -186,33 +186,33 @@ export function ProductDetail() {
       />
 
       {/* Premium Hero Section */}
-      <section className="relative py-16 px-4 overflow-hidden bg-gradient-to-br from-purple-900 via-slate-900 to-purple-900 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950">
+      <section className="relative py-16 px-4 overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-600 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-8 text-sm">
-            <Link href="/" className="text-purple-300 hover:text-purple-200">
+            <Link href="/" className="text-amber-400 hover:text-amber-300">
               Home
             </Link>
             <span className="text-purple-400/50">/</span>
             <Link 
               href={`/collections/${product.category}`}
-              className="text-purple-300 hover:text-purple-200 capitalize"
+              className="text-amber-400 hover:text-amber-300 capitalize"
             >
               {product.category === 'unisex' ? 'Unisex' : product.category}
             </Link>
             <span className="text-purple-400/50">/</span>
-            <span className="text-purple-200">{product.name}</span>
+            <span className="text-gray-200">{product.name}</span>
           </div>
 
           {/* Back Button */}
           <Button
             variant="secondary"
-            className="mb-6 border-purple-300 text-purple-300 hover:bg-purple-300/10"
+            className="mb-6 border-amber-400 text-amber-400 hover:bg-amber-400/10"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -268,20 +268,20 @@ export function ProductDetail() {
               {/* Badges - With Gradient Icons */}
               <div className="flex gap-2 flex-wrap">
                 {product.isNew && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
-                    <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-amber-300 dark:border-amber-600">
+                    <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     <span className="text-xs font-bold text-black dark:text-white">New Arrival</span>
                   </div>
                 )}
                 {product.isBestSeller && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
-                    <Award className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-amber-300 dark:border-amber-600">
+                    <Award className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     <span className="text-xs font-bold text-black dark:text-white">Best Seller</span>
                   </div>
                 )}
                 {product.isOnSale && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
-                    <Flame className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-amber-300 dark:border-amber-600">
+                    <Flame className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     <span className="text-xs font-bold text-black dark:text-white">Limited Offer</span>
                   </div>
                 )}
@@ -289,7 +289,7 @@ export function ProductDetail() {
 
               {/* Title and Brand */}
               <div className="space-y-2">
-                <p className="text-purple-600 dark:text-purple-400 text-xs font-bold tracking-widest uppercase">
+                <p className="text-amber-600 dark:text-amber-400 text-xs font-bold tracking-widest uppercase">
                   {product.brand}
                 </p>
                 <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white leading-tight tracking-tight">
@@ -313,7 +313,7 @@ export function ProductDetail() {
                       key={i}
                       className={`h-3 w-3 ${
                         i < Math.round(product.rating)
-                          ? 'fill-purple-500 text-purple-500'
+                          ? 'fill-amber-500 text-amber-500'
                           : 'text-slate-400 dark:text-slate-600'
                       }`}
                     />
@@ -349,8 +349,8 @@ export function ProductDetail() {
                         onClick={() => handleSizeChange(size)}
                         className={`py-2 px-3 rounded border-2 font-semibold transition-all text-xs ${
                           selectedSize === size
-                            ? 'border-purple-500 bg-purple-50 dark:bg-slate-800 text-black dark:text-white'
-                            : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-gray-300 hover:border-purple-400'
+                            ? 'border-amber-500 bg-amber-50 dark:bg-slate-800 text-black dark:text-white'
+                            : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-gray-300 hover:border-amber-400'
                         }`}
                       >
                         <div className="font-medium">{size}</div>
@@ -461,7 +461,7 @@ export function ProductDetail() {
                   <Button
                     onClick={handleAddToCart}
                     disabled={product.stock === 0}
-                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 text-sm shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+                    className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 text-sm shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50"
                     size="sm"
                   >
                     <ShoppingBag className="h-4 w-4 mr-2" />
@@ -481,18 +481,18 @@ export function ProductDetail() {
                 </div>
               </div>
 
-              {/* Features - With Simple Purple Outlined Icons */}
+              {/* Features - With Simple Amber Outlined Icons */}
               <div className="space-y-2 p-4 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600">
                 <div className="flex items-center text-black dark:text-white text-sm gap-3 font-medium">
-                  <Truck className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <Truck className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <span>Free shipping on orders over ₹5000</span>
                 </div>
                 <div className="flex items-center text-black dark:text-white text-sm gap-3 font-medium">
-                  <Shield className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <span>100% authentic guarantee</span>
                 </div>
                 <div className="flex items-center text-black dark:text-white text-sm gap-3 font-medium">
-                  <RotateCcw className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <RotateCcw className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <span>30-day hassle-free returns</span>
                 </div>
               </div>

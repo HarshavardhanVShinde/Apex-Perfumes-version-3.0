@@ -3,19 +3,33 @@ import React from 'react';
 
 export function Terms() {
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-primary-950 dark:text-neutral-100 mb-8 tracking-wide">
-          Terms of Service
-        </h1>
+    <div className="min-h-screen">
+      {/* Premium Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
+        </div>
         
-        <div className="prose prose-lg max-w-none text-primary-700 dark:text-neutral-300">
-          <p className="text-sm text-primary-600 dark:text-neutral-400 mb-8">
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+          <div className="mb-6 inline-block">
+            <span className="text-amber-400 text-sm font-semibold tracking-widest">LEGAL</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-wider text-white mb-4">
+            Terms of Service
+          </h1>
+        </div>
+      </section>
+
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <div className="prose prose-lg max-w-none text-slate-600 dark:text-gray-300">
+          <p className="text-sm text-slate-600 dark:text-gray-400 mb-8">
             Last updated: January 15, 2025
           </p>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Agreement to Terms
             </h2>
             <p className="mb-4">
@@ -25,10 +39,10 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Use of Our Services
             </h2>
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Eligibility
             </h3>
             <p className="mb-4">
@@ -36,7 +50,7 @@ export function Terms() {
               you represent that you meet this requirement.
             </p>
             
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Account Registration
             </h3>
             <p className="mb-4">
@@ -46,10 +60,10 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Orders and Purchases
             </h2>
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Product Information
             </h3>
             <p className="mb-4">
@@ -57,7 +71,7 @@ export function Terms() {
               warrant that product descriptions are accurate, complete, reliable, or error-free.
             </p>
             
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Pricing and Payment
             </h3>
             <ul className="list-disc list-inside mb-4 space-y-2">
@@ -67,7 +81,7 @@ export function Terms() {
               <li>Sales tax will be added where applicable</li>
             </ul>
             
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Order Acceptance
             </h3>
             <p className="mb-4">
@@ -77,7 +91,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Shipping and Delivery
             </h2>
             <ul className="list-disc list-inside mb-4 space-y-2">
@@ -89,10 +103,10 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Returns and Refunds
             </h2>
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Return Policy
             </h3>
             <ul className="list-disc list-inside mb-4 space-y-2">
@@ -102,7 +116,7 @@ export function Terms() {
               <li>Customer is responsible for return shipping costs</li>
             </ul>
             
-            <h3 className="text-xl font-medium text-primary-900 dark:text-neutral-200 mb-3">
+            <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-3">
               Refund Process
             </h3>
             <p className="mb-4">
@@ -112,7 +126,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Intellectual Property
             </h2>
             <p className="mb-4">
@@ -123,7 +137,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Prohibited Uses
             </h2>
             <p className="mb-4">You may not use our services:</p>
@@ -137,7 +151,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Disclaimers and Limitation of Liability
             </h2>
             <p className="mb-4">
@@ -147,7 +161,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Privacy Policy
             </h2>
             <p className="mb-4">
@@ -157,7 +171,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Changes to Terms
             </h2>
             <p className="mb-4">
@@ -167,7 +181,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Governing Law
             </h2>
             <p className="mb-4">
@@ -177,7 +191,7 @@ export function Terms() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold text-primary-950 dark:text-neutral-100 mb-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-4">
               Contact Information
             </h2>
             <p className="mb-4">

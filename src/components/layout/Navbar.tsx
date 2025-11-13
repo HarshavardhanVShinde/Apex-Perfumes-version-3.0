@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -33,10 +33,30 @@ export function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
+  const collectionsRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  
   const { theme, toggleTheme } = useThemeStore();
   const { openCart, getItemCount } = useCartStore();
   const { user, logout } = useAuthStore();
   const router = useRouter();
+
+  // Click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (collectionsRef.current && !collectionsRef.current.contains(event.target as Node)) {
+        setIsCollectionsOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const collections = [
     { name: "Men's", slug: 'men' },
@@ -87,7 +107,7 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {/* Collections Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={collectionsRef}>
               <Button
                 variant="ghost"
                 className="flex items-center space-x-1 text-slate-700 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors"
@@ -98,7 +118,7 @@ export function Navbar() {
               </Button>
               
               {isCollectionsOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50">
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50 animate-slide-up">
                   {collections.map(collection => (
                     <Link
                       key={collection.slug}
@@ -142,7 +162,7 @@ export function Navbar() {
             </Button>
 
             {/* User menu */}
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <Button
                 variant="ghost"
                 size="sm"
@@ -160,12 +180,12 @@ export function Navbar() {
               </Button>
               
               {isUserMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50">
+                <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50 animate-slide-up">
                   {user ? (
                     <>
-                      <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-t-lg">
                         <p className="text-xs uppercase tracking-widest text-amber-700 dark:text-amber-400 font-semibold">Account</p>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white mt-1">{user.email}</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white mt-1 truncate" title={user.email}>{user.email}</p>
                       </div>
                       <Link
                         href="/account"

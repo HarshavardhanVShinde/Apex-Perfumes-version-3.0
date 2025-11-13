@@ -109,31 +109,42 @@ export function Account() {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary-950 dark:text-neutral-100 mb-2">
+    <div className="min-h-screen">
+      {/* Premium Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
+          <div className="mb-6 inline-block">
+            <span className="text-amber-400 text-sm font-semibold tracking-widest">WELCOME BACK</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-wider text-white mb-4">
             My Account
           </h1>
-          <p className="text-primary-600 dark:text-neutral-400">
-            Welcome back, {user.firstName}
+          <p className="text-xl text-gray-100 tracking-wide font-light">
+            {user.firstName} {user.lastName}
           </p>
         </div>
+      </section>
 
+      <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-primary-900 rounded-lg shadow-sm border border-primary-100 dark:border-primary-800 p-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-accent-100 dark:bg-accent-900 rounded-full flex items-center justify-center mr-3">
-                  <User className="h-6 w-6 text-accent-600 dark:text-accent-400" />
+                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mr-3">
+                  <User className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-primary-950 dark:text-neutral-100">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
                     {user.firstName} {user.lastName}
                   </h3>
-                  <p className="text-sm text-primary-600 dark:text-neutral-400">
+                  <p className="text-sm text-slate-600 dark:text-gray-400">
                     {user.email}
                   </p>
                 </div>
@@ -142,7 +153,7 @@ export function Account() {
               <nav className="space-y-2">
                 <a
                   href="#orders"
-                  className="flex items-center px-3 py-2 text-sm text-primary-700 dark:text-neutral-300 hover:bg-primary-50 dark:hover:bg-primary-800 rounded-md transition-colors"
+                  className="flex items-center px-3 py-2 text-sm text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors"
                 >
                   <Package className="h-4 w-4 mr-3" />
                   Order History
@@ -150,7 +161,7 @@ export function Account() {
               
                 <a
                   href="#settings"
-                  className="flex items-center px-3 py-2 text-sm text-primary-700 dark:text-neutral-300 hover:bg-primary-50 dark:hover:bg-primary-800 rounded-md transition-colors"
+                  className="flex items-center px-3 py-2 text-sm text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors"
                 >
                   <Settings className="h-4 w-4 mr-3" />
                   Settings
