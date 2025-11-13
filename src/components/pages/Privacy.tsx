@@ -4,25 +4,25 @@ import React from 'react';
 export function Privacy() {
   return (
     <div className="min-h-screen">
-      {/* Premium Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      {/* Premium Hero Section - Mobile Optimized */}
+      <section className="relative py-12 sm:py-16 md:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
         
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <div className="mb-6 inline-block">
-            <span className="text-amber-400 text-sm font-semibold tracking-widest">LEGAL</span>
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6">
+          <div className="mb-4 sm:mb-6 inline-block">
+            <span className="text-amber-400 text-xs sm:text-sm font-semibold tracking-widest">LEGAL</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold tracking-wider text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-wider text-white mb-3 sm:mb-4 leading-tight">
             Privacy Policy
           </h1>
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-14 md:py-16">
         <div className="prose prose-lg max-w-none text-slate-600 dark:text-gray-300">
           <p className="text-sm text-slate-600 dark:text-gray-400 mb-8">
             Last updated: January 15, 2025

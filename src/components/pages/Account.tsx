@@ -110,29 +110,29 @@ export function Account() {
 
   return (
     <div className="min-h-screen">
-      {/* Premium Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      {/* Premium Hero Section - Mobile Optimized */}
+      <section className="relative py-12 sm:py-16 md:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
         
-        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-          <div className="mb-6 inline-block">
-            <span className="text-amber-400 text-sm font-semibold tracking-widest">WELCOME BACK</span>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center">
+          <div className="mb-4 sm:mb-6 inline-block">
+            <span className="text-amber-400 text-xs sm:text-sm font-semibold tracking-widest">WELCOME BACK</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold tracking-wider text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-wider text-white mb-3 sm:mb-4 leading-tight">
             My Account
           </h1>
-          <p className="text-xl text-gray-100 tracking-wide font-light">
+          <p className="text-lg sm:text-xl text-gray-100 tracking-wide font-light">
             {user.firstName} {user.lastName}
           </p>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6">

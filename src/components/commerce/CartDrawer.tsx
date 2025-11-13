@@ -5,6 +5,7 @@ import { useCartStore } from '@/stores/cart';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getProduct } from '@/lib/supabase/products';
 import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 import type { CartItem as CartItemType } from '@/types';
@@ -26,6 +27,7 @@ export function CartDrawer() {
     clearError,
   } = useCartStore();
 
+  const router = useRouter();
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -346,11 +348,15 @@ export function CartDrawer() {
             
             <div className="space-y-3">
               <Button 
-                asChild 
                 className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3.5 text-base transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
-                onClick={closeCart}
+                onClick={() => {
+                  // Close the drawer first so the close animation can play,
+                  // then navigate to the checkout page after a short delay.
+                  closeCart();
+                  setTimeout(() => router.push('/checkout'), 250);
+                }}
               >
-                <Link href="/checkout">Proceed to Checkout</Link>
+                Proceed to Checkout
               </Button>
               <Button 
                 type="button"

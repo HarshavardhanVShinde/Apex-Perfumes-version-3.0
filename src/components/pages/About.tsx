@@ -28,37 +28,37 @@ export function About() {
 
   return (
     <div className="min-h-screen">
-      {/* Premium Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+      {/* Premium Hero Section - Mobile Optimized */}
+      <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-amber-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
         
-        <div className="relative z-10 text-center px-4 max-w-4xl">
-          <div className="mb-6 inline-block">
-            <span className="text-amber-400 text-sm font-semibold tracking-widest">OUR STORY</span>
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl py-12 sm:py-0">
+          <div className="mb-4 sm:mb-6 inline-block">
+            <span className="text-amber-400 text-xs sm:text-sm font-semibold tracking-widest">OUR STORY</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-wider text-white mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-wider text-white mb-4 sm:mb-6 leading-tight">
             The Aura Essence Story
           </h1>
-          <p className="text-xl md:text-2xl text-gray-100 tracking-wide font-light max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-100 tracking-wide font-light max-w-3xl mx-auto leading-relaxed">
             Born from a passion for extraordinary fragrance and an unwavering commitment to excellence, 
             Aura Essence represents the pinnacle of luxury perfumery.
           </p>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Story Section */}
-        <section className="py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Story Section - Mobile Enhanced */}
+        <section className="py-12 sm:py-16 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center">
           <div>
-            <span className="text-amber-600 text-sm font-semibold tracking-widest">SINCE 2020</span>
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6 mt-4">
+            <span className="text-amber-600 text-xs sm:text-sm font-semibold tracking-widest">SINCE 2020</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6 mt-3 sm:mt-4">
               Our Beginning
             </h2>
-            <p className="text-slate-600 dark:text-gray-300 mb-4 leading-relaxed text-lg">
+            <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-gray-300 mb-4 leading-relaxed">
               Aura Essence was founded in 2020 by a team of fragrance enthusiasts who believed that luxury 
               perfumery had lost touch with its artisanal roots. We set out to create a brand that 
               would honor the traditional craftsmanship of perfume-making while embracing modern 
@@ -84,25 +84,25 @@ export function About() {
           </div>
         </section>
 
-        {/* Values Section */}
-        <section className="py-20 bg-slate-50 dark:bg-slate-900 -mx-4 px-4 lg:-mx-[calc((100vw-1280px)/2)] lg:px-[calc((100vw-1280px)/2)]">
+        {/* Values Section - Mobile Enhanced */}
+        <section className="py-12 sm:py-16 md:py-20 bg-slate-50 dark:bg-slate-900 -mx-4 sm:-mx-6 px-4 sm:px-6 lg:-mx-[calc((100vw-1280px)/2)] lg:px-[calc((100vw-1280px)/2)]">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <span className="text-amber-600 text-sm font-semibold tracking-widest">WHAT DRIVES US</span>
-              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-4 mb-4">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <span className="text-amber-600 text-xs sm:text-sm font-semibold tracking-widest">WHAT DRIVES US</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-3 sm:mt-4 mb-3 sm:mb-4 px-4">
                 Our Values
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {values.map((value, index) => (
-                <div key={index} className="text-center bg-white dark:bg-slate-800 p-8 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full mb-4">
-                    <value.icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                <div key={index} className="text-center bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all border border-slate-200 dark:border-slate-700 hover:scale-105">
+                  <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-amber-900/10 rounded-full mb-4 sm:mb-6 shadow-md">
+                    <value.icon className="h-7 w-7 sm:h-8 sm:w-8 text-amber-600 dark:text-amber-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+                  <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white mb-2 sm:mb-3">
                     {value.title}
                   </h3>
-                  <p className="text-slate-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400 leading-relaxed">
                     {value.description}
                   </p>
                 </div>

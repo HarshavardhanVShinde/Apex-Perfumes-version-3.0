@@ -67,9 +67,9 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link 
       href={`/product/${product.id}`}
-      className="group block bg-white dark:bg-primary-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+      className="group block bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-slate-100 dark:border-slate-700 hover:scale-[1.02]"
     >
-      <div className="relative aspect-square overflow-hidden">
+      <div className="relative aspect-square overflow-hidden bg-slate-50 dark:bg-slate-900">
         <Image
           src={getImageForIndex(currentImageIndex)}
           alt={product.name}
@@ -90,13 +90,13 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Wishlist button */}
         <button
           onClick={handleWishlist}
-          className="absolute top-3 right-3 p-2 bg-white dark:bg-primary-800 rounded-full shadow-md hover:scale-110 transition-transform duration-200"
+          className="absolute top-3 right-3 p-2.5 sm:p-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-transform duration-200 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"
         >
           <Heart 
-            className={`h-4 w-4 transition-colors ${
+            className={`h-5 w-5 sm:h-4 sm:w-4 transition-colors ${
               isWishlisted 
                 ? 'fill-red-500 text-red-500' 
-                : 'text-primary-600 dark:text-neutral-400'
+                : 'text-slate-600 dark:text-gray-400'
             }`} 
           />
         </button>
@@ -105,7 +105,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <Button
             onClick={handleAddToCart}
-            className="w-full"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-lg min-h-[44px] sm:min-h-[36px] font-semibold"
             size="sm"
           >
             <ShoppingBag className="h-4 w-4 mr-2" />
@@ -114,35 +114,35 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 sm:p-5">
         {/* Brand & Type */}
-        <div className="flex items-center justify-between text-sm text-primary-600 dark:text-neutral-400 mb-1">
-          <span>{product.brand}</span>
-          <span>{product.type}</span>
+        <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600 dark:text-gray-400 mb-1.5 sm:mb-1">
+          <span className="font-medium">{product.brand}</span>
+          <span className="text-amber-600 dark:text-amber-400">{product.type}</span>
         </div>
 
         {/* Product name */}
-        <h3 className="font-medium text-primary-900 dark:text-neutral-100 mb-2 line-clamp-1">
+        <h3 className="font-semibold text-base sm:text-base text-slate-900 dark:text-white mb-2 line-clamp-1">
           {product.name}
         </h3>
 
         {/* Rating */}
-        <div className="flex items-center mb-2">
+        <div className="flex items-center mb-2.5 sm:mb-2">
           <div className="flex items-center">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="ml-1 text-sm text-primary-600 dark:text-neutral-400">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+            <span className="ml-1.5 text-sm font-medium text-slate-700 dark:text-gray-300">
               {formatRating(product.rating)}
             </span>
           </div>
         </div>
 
         {/* Price */}
-        <div className="flex items-center space-x-2">
-          <span className="font-semibold text-primary-900 dark:text-neutral-100">
+        <div className="flex items-center space-x-2 mb-2">
+          <span className="font-bold text-lg sm:text-base text-slate-900 dark:text-white">
             {formatPrice(product.price)}
           </span>
           {product.originalPrice && (
-            <span className="text-sm text-primary-500 line-through">
+            <span className="text-sm text-slate-500 dark:text-gray-500 line-through">
               {formatPrice(product.originalPrice)}
             </span>
           )}
@@ -150,7 +150,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Top notes preview */}
         <div className="mt-2">
-          <p className="text-xs text-primary-600 dark:text-neutral-400">
+          <p className="text-xs text-slate-600 dark:text-gray-400 line-clamp-1">
             {product.notes.top.slice(0, 2).join(', ')}
             {product.notes.top.length > 2 && '...'}
           </p>

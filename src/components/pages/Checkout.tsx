@@ -181,14 +181,14 @@ export function Checkout() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 py-8 sm:py-10 md:py-12 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center mb-12">
+        {/* Header - Mobile Optimized */}
+        <div className="flex items-center mb-8 sm:mb-10 md:mb-12">
           <Button
             type="button"
             variant="ghost"
-            className="text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+            className="text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 min-h-[48px] px-4 sm:px-6"
             onClick={handleBackToCart}
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -196,17 +196,17 @@ export function Checkout() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Checkout Form */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12">
+          {/* Checkout Form - Mobile Enhanced */}
           <div>
-            <div className="mb-8">
-              <span className="text-amber-600 dark:text-amber-400 text-sm font-semibold tracking-widest uppercase">Secure Checkout</span>
-              <h1 className="text-5xl font-bold text-slate-900 dark:text-white mt-2">
+            <div className="mb-6 sm:mb-8">
+              <span className="text-amber-600 dark:text-amber-400 text-xs sm:text-sm font-semibold tracking-widest uppercase">Secure Checkout</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-2 leading-tight">
                 Shipping Details
               </h1>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6">
               {/* Contact Information */}
               <div>
                 <h2 className="text-lg font-semibold text-primary-950 dark:text-neutral-100 mb-4">
