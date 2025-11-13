@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingBag, Star, Heart } from 'lucide-react';
 import { useCartStore } from '@/stores/cart';
 import { useWishlistStore } from '@/stores/wishlist';
@@ -69,15 +70,14 @@ export function ProductCard({ product }: ProductCardProps) {
       className="group block bg-white dark:bg-primary-900 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
     >
       <div className="relative aspect-square overflow-hidden">
-        <img
+        <Image
           src={getImageForIndex(currentImageIndex)}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          onError={(event) => {
-            event.currentTarget.src = '/perfume-logo.png';
-          }}
         />
         
         {/* Badges */}

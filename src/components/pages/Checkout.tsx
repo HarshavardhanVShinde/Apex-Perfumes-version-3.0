@@ -11,8 +11,9 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { checkoutSchema, type CheckoutForm } from '@/lib/schema';
 import { formatPrice } from '@/lib/utils';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 import { createOrder, updatePaymentStatus } from '@/lib/supabase/orders';
+import Image from 'next/image';
 
 // Helper to dynamically load Razorpay script
 function loadRazorpay(): Promise<boolean> {
@@ -328,10 +329,12 @@ export function Checkout() {
               <div className="space-y-4 mb-6">
                 {items.map(item => (
                   <div key={item.id} className="flex items-center space-x-3">
-                    <img
+                    <Image
                       src={item.product.images[0]}
                       alt={item.product.name}
-                      className="w-12 h-12 object-cover rounded-md"
+                      width={48}
+                      height={48}
+                      className="object-cover rounded-md"
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-primary-950 dark:text-neutral-100 truncate">

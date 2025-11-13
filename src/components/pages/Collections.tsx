@@ -3,10 +3,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ProductCard } from '@/components/commerce/ProductCard';
 import type { Product } from '@/types';
-import { getProducts } from '@/lib/supabase/products';
-import { mapProductRowToProduct } from '@/lib/supabase/mappers';
+import { fetchProducts } from '@/lib/api/products';
 import { Button } from '@/components/ui/Button';
-import { getFallbackProductsByCategory } from '@/lib/products/fallback';
 
 // Supabase-backed products state
 const initialProducts: Product[] = [];
@@ -35,10 +33,7 @@ export function Collections() {
     ? 'Bold and sophisticated fragrances for the modern man'
     : 'Elegant and captivating scents for every occasion';
 
-  const fallbackProductsForCategory = useMemo(
-    () => getFallbackProductsByCategory(activeCategory as Product['category']),
-    [activeCategory]
-  );
+  const fallbackProductsForCategory = [] as Product[];
 
   // Validate category - redirect to /collections/men if invalid
   useEffect(() => {
@@ -54,30 +49,19 @@ export function Collections() {
     setErrorMessage(null);
     const fetchData = async () => {
       try {
-        const resp = await getProducts(
-          {
-            category: activeCategory,
-          },
-          1,
-          100
-        );
-        const mapped = (resp.products ?? []).map(mapProductRowToProduct);
+        const resp = await fetchProducts({ category: activeCategory, page: 1, limit: 100 });
+        const mapped = resp.products ?? [];
         if (!isMounted) {
           return;
         }
 
-        if (mapped.length > 0) {
-          setProducts(mapped);
-          setErrorMessage(null);
-        } else {
-          setProducts([...fallbackProductsForCategory]);
-          setErrorMessage('Showing cached products while live data refreshes.');
-        }
+        setProducts(mapped);
+        setErrorMessage(null);
       } catch (e) {
         console.error('Failed to load products', e);
         if (isMounted) {
-          setProducts([...fallbackProductsForCategory]);
-          setErrorMessage('Unable to load live products. Showing cached catalog for now.');
+          setProducts([]);
+          setErrorMessage('Unable to load products from Supabase.');
         }
       } finally {
         if (isMounted) setLoading(false);

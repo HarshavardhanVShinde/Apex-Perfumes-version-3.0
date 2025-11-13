@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { getProduct } from '@/lib/supabase/products';
 import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 import type { CartItem as CartItemType } from '@/types';
+import Image from 'next/image';
 
 const DEFAULT_SIZES = ['20ml', '50ml', '100ml'];
 
@@ -186,13 +187,12 @@ export function CartDrawer() {
                 return (
                   <div key={itemKey} className="flex space-x-4 border-b border-gray-200 dark:border-slate-800 pb-4 hover:bg-gray-50 dark:hover:bg-slate-900/50 -mx-2 px-2 py-2 rounded-lg transition-colors">
                     <div className="relative">
-                      <img
+                      <Image
                         src={coverImage}
                         alt={item.product.name}
-                        className="w-20 h-20 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                        onError={(event) => {
-                          event.currentTarget.src = '/perfume-logo.png';
-                        }}
+                        width={80}
+                        height={80}
+                        className="object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow"
                       />
                       {item.quantity > 1 && (
                         <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">

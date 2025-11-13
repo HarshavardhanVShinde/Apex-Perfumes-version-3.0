@@ -11,6 +11,7 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/auth';
 import { mapProductRowToProduct } from '@/lib/supabase/mappers';
+const CART_CACHE_KEY = 'apex_cart_v1'
 
 interface CartTotalsState {
   subtotal: number;
@@ -180,6 +181,15 @@ export const useCartStore = create<CartState>((set, get) => ({
   openCart: () => {
     const user = useAuthStore.getState().user;
     if (!user) {
+      try {
+        const cached = typeof window !== 'undefined' ? window.localStorage.getItem(CART_CACHE_KEY) : null
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          const items = Array.isArray(parsed.items) ? parsed.items : []
+          const totals = parsed.totals && typeof parsed.totals === 'object' ? parsed.totals : EMPTY_TOTALS
+          set({ items, totals })
+        }
+      } catch {}
       set({ isOpen: true, error: 'Please sign in to view your cart.' });
     } else {
       set({ isOpen: true });
@@ -257,10 +267,15 @@ export const useCartStore = create<CartState>((set, get) => ({
         promotionText: totalsResponse.promotion_text ?? null,
       };
 
-      set({
-        items: mappedItems,
-        totals: resolvedTotals,
-      });
+      set({ items: mappedItems, totals: resolvedTotals });
+      try {
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(
+            CART_CACHE_KEY,
+            JSON.stringify({ items: mappedItems, totals: resolvedTotals })
+          )
+        }
+      } catch {}
     } catch (error) {
       console.error('Error loading cart:', error);
       set({ error: 'Failed to load cart', items: [], totals: EMPTY_TOTALS });

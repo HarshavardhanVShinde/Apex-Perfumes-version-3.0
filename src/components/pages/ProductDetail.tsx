@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Star, Heart, ShoppingBag, Truck, Shield, RotateCcw, ChevronRight, Sparkles, Flame, Award } from 'lucide-react';
 import { useCartStore } from '@/stores/cart';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ProductCard } from '@/components/commerce/ProductCard';
 import { formatPrice, formatRating } from '@/lib/utils';
-import { getProduct, getProducts } from '@/lib/supabase/products';
+import { fetchProduct, fetchProducts } from '@/lib/api/products';
 import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 import type { Database } from '@/types/supabase';
 import type { Product as AppProduct } from '@/types';
@@ -40,7 +41,7 @@ export function ProductDetail() {
         setError(null);
         
         // Fetch the product
-        const productData = await getProduct(id);
+        const productData = await fetchProduct(id);
         
         if (!productData) {
           setError('Product not found');
@@ -52,15 +53,10 @@ export function ProductDetail() {
         
         // Fetch related products from the same category
         try {
-          const response = await getProducts(
-            { category: productData.category },
-            1,
-            4
-          );
+          const response = await fetchProducts({ category: productData.category, page: 1, limit: 4 });
           const related = response.products
             .filter(p => p.id !== id)
-            .slice(0, 4)
-            .map(mapProductRowToProduct);
+            .slice(0, 4);
           setRelatedProducts(related);
         } catch (err) {
           console.error('Error fetching related products:', err);
@@ -235,10 +231,12 @@ export function ProductDetail() {
             {/* Product Images */}
             <div className="space-y-4">
               <div className="aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 relative group">
-                <img
+                <Image
                   src={product.images[selectedImageIndex]}
                   alt={product.name}
-                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
@@ -255,10 +253,12 @@ export function ProductDetail() {
                           : 'border-slate-200 dark:border-slate-700 hover:border-purple-400'
                       }`}
                     >
-                      <img
+                      <Image
                         src={image}
                         alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                        width={96}
+                        height={96}
+                        className="object-cover hover:scale-110 transition-transform duration-300"
                       />
                     </button>
                   ))}

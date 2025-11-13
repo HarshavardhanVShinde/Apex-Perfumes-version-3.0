@@ -4,10 +4,8 @@ import Link from 'next/link';
 import { ArrowRight, Star, Shield, Truck, Award, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ProductCard } from '@/components/commerce/ProductCard';
-import { getFeaturedProducts, getProducts } from '@/lib/supabase/products';
-import { mapProductRowToProduct } from '@/lib/supabase/mappers';
+import { fetchFeatured, fetchProducts } from '@/lib/api/products';
 import type { Product } from '@/types';
-import { fallbackSections as FALLBACK_SECTIONS } from '@/lib/products/fallback';
 
 export function Home() {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
@@ -26,78 +24,53 @@ export function Home() {
 
     try {
       const [featuredResult, menResult, womenResult] = await Promise.allSettled([
-        getFeaturedProducts(),
-        getProducts({ category: 'men' }),
-        getProducts({ category: 'women' }),
+        fetchFeatured(),
+        fetchProducts({ category: 'men', limit: 4 }),
+        fetchProducts({ category: 'women', limit: 4 }),
       ]);
 
       if (!mountedRef.current) {
         return;
       }
 
-      let usedFallback = false;
-
       if (featuredResult.status === 'fulfilled') {
         const { newProducts: newItems, bestSellers: bestSellerItems } = featuredResult.value;
-        const bestSellerProducts = (bestSellerItems ?? []).slice(0, 4).map(mapProductRowToProduct);
-        const newestProducts = (newItems ?? []).slice(0, 4).map(mapProductRowToProduct);
+        const bestSellerProducts = (bestSellerItems ?? []).slice(0, 4);
+        const newestProducts = (newItems ?? []).slice(0, 4);
 
         if (bestSellerProducts.length > 0) {
           setBestSellers(bestSellerProducts);
-        } else {
-          setBestSellers([...FALLBACK_SECTIONS.bestSellers]);
-          usedFallback = true;
         }
 
         if (newestProducts.length > 0) {
           setNewProducts(newestProducts);
-        } else {
-          setNewProducts([...FALLBACK_SECTIONS.newProducts]);
-          usedFallback = true;
         }
       } else {
         console.error('Failed to load featured products:', featuredResult.reason);
-        setBestSellers([...FALLBACK_SECTIONS.bestSellers]);
-        setNewProducts([...FALLBACK_SECTIONS.newProducts]);
-        usedFallback = true;
+        setBestSellers([]);
+        setNewProducts([]);
       }
 
       if (menResult.status === 'fulfilled') {
-        const menProductList = (menResult.value.products ?? []).slice(0, 4).map(mapProductRowToProduct);
-        if (menProductList.length > 0) {
-          setMenProducts(menProductList);
-        } else {
-          setMenProducts([...FALLBACK_SECTIONS.men]);
-          usedFallback = true;
-        }
+        const menProductList = (menResult.value.products ?? []).slice(0, 4);
+        setMenProducts(menProductList);
       } else {
         console.error('Failed to load men products:', menResult.reason);
-        setMenProducts([...FALLBACK_SECTIONS.men]);
-        usedFallback = true;
+        setMenProducts([]);
       }
 
       if (womenResult.status === 'fulfilled') {
-        const womenProductList = (womenResult.value.products ?? []).slice(0, 4).map(mapProductRowToProduct);
-        if (womenProductList.length > 0) {
-          setWomenProducts(womenProductList);
-        } else {
-          setWomenProducts([...FALLBACK_SECTIONS.women]);
-          usedFallback = true;
-        }
+        const womenProductList = (womenResult.value.products ?? []).slice(0, 4);
+        setWomenProducts(womenProductList);
       } else {
         console.error('Failed to load women products:', womenResult.reason);
-        setWomenProducts([...FALLBACK_SECTIONS.women]);
-        usedFallback = true;
+        setWomenProducts([]);
       }
 
-      if (
-        featuredResult.status === 'rejected' &&
-        menResult.status === 'rejected' &&
-        womenResult.status === 'rejected'
-      ) {
-        setErrorMessage('Unable to reach Supabase right now. Showing our offline catalog.');
-      } else if (usedFallback) {
-        setErrorMessage('Some sections are using cached data while live products refresh.');
+      if (featuredResult.status === 'rejected' && menResult.status === 'rejected' && womenResult.status === 'rejected') {
+        setErrorMessage('Unable to reach Supabase right now.');
+      } else if (featuredResult.status === 'rejected' || menResult.status === 'rejected' || womenResult.status === 'rejected') {
+        setErrorMessage('Some sections failed to load from Supabase.');
       } else {
         setErrorMessage(null);
       }
@@ -107,11 +80,11 @@ export function Home() {
         return;
       }
 
-      setBestSellers([...FALLBACK_SECTIONS.bestSellers]);
-      setNewProducts([...FALLBACK_SECTIONS.newProducts]);
-      setMenProducts([...FALLBACK_SECTIONS.men]);
-      setWomenProducts([...FALLBACK_SECTIONS.women]);
-      setErrorMessage('Unable to load live products. Showing cached catalog for now.');
+      setBestSellers([]);
+      setNewProducts([]);
+      setMenProducts([]);
+      setWomenProducts([]);
+      setErrorMessage('Unable to load products from Supabase.');
     } finally {
       if (mountedRef.current) {
         setLoading(false);

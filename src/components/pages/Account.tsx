@@ -6,7 +6,7 @@ import { User, Package, Heart, Settings, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 
 type OrderItemDisplay = {
   name: string;
