@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-primary-200 dark:border-primary-800;
+  }
+  
+  body {
+    @apply bg-neutral-100 text-primary-950 dark:bg-primary-950 dark:text-neutral-100;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-wider;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-neutral-100 dark:ring-offset-primary-950 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:focus-visible:ring-neutral-100 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-950 text-neutral-100 hover:bg-primary-800 dark:bg-neutral-100 dark:text-primary-950 dark:hover:bg-neutral-200;
+  }
+
+  .btn-secondary {
+    @apply btn border border-primary-200 bg-transparent hover:bg-primary-50 dark:border-primary-800 dark:hover:bg-primary-900;
+  }
+
+  .btn-accent {
+    @apply btn bg-accent-500 text-primary-950 hover:bg-accent-600;
+  }
+}

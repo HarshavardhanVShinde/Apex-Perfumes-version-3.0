@@ -1,0 +1,229 @@
+[
+  {
+    "id": "apex-noir-1",
+    "name": "Midnight Noir",
+    "brand": "Aura Essence",
+    "price": 180,
+    "images": [
+      "https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/1961795/pexels-photo-1961795.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "unisex",
+    "type": "EDP",
+    "notes": {
+      "top": ["Bergamot", "Black Pepper", "Cardamom"],
+      "heart": ["Iris", "Rose", "Jasmine"],
+      "base": ["Oud", "Vanilla", "Musk"]
+    },
+    "longevity": 10,
+    "sillage": "strong",
+    "rating": 4.8,
+    "stock": 25,
+    "description": "A sophisticated blend of dark florals and exotic woods, perfect for evening wear.",
+    "isNew": true,
+    "isBestSeller": true
+  },
+  {
+    "id": "apex-citrus-2",
+    "name": "Golden Dawn",
+    "brand": "Aura Essence",
+    "price": 150,
+    "originalPrice": 180,
+    "images": [
+      "https://images.pexels.com/photos/1191710/pexels-photo-1191710.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/2885320/pexels-photo-2885320.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "unisex",
+    "type": "EDT",
+    "notes": {
+      "top": ["Lemon", "Orange", "Grapefruit"],
+      "heart": ["Neroli", "Lavender", "Geranium"],
+      "base": ["Cedar", "Ambergris", "White Musk"]
+    },
+    "longevity": 8,
+    "sillage": "moderate",
+    "rating": 4.6,
+    "stock": 18,
+    "description": "A bright and energizing citrus fragrance that captures the essence of a new day.",
+    "isOnSale": true
+  },
+  {
+    "id": "apex-floral-3",
+    "name": "Royal Rose",
+    "brand": "Aura Essence",
+    "price": 220,
+    "images": [
+      "https://images.pexels.com/photos/1188440/pexels-photo-1188440.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "women",
+    "type": "Extrait",
+    "notes": {
+      "top": ["Pink Pepper", "Mandarin", "Cassis"],
+      "heart": ["Damask Rose", "Peony", "Magnolia"],
+      "base": ["Sandalwood", "Amber", "Patchouli"]
+    },
+    "longevity": 12,
+    "sillage": "strong",
+    "rating": 4.9,
+    "stock": 12,
+    "description": "An opulent floral masterpiece featuring the finest damask rose.",
+    "isBestSeller": true
+  },
+  {
+    "id": "apex-woody-4",
+    "name": "Forest King",
+    "brand": "Aura Essence",
+    "price": 195,
+    "images": [
+      "https://images.pexels.com/photos/1128678/pexels-photo-1128678.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "men",
+    "type": "EDP",
+    "notes": {
+      "top": ["Pine", "Eucalyptus", "Juniper"],
+      "heart": ["Cedar", "Fir Balsam", "Cypress"],
+      "base": ["Vetiver", "Oakmoss", "Leather"]
+    },
+    "longevity": 11,
+    "sillage": "strong",
+    "rating": 4.7,
+    "stock": 20,
+    "description": "A powerful woody fragrance that embodies masculine strength and natural elegance.",
+    "isBestSeller": true
+  },
+  {
+    "id": "apex-solid-5",
+    "name": "Travel Noir",
+    "brand": "Aura Essence",
+    "price": 65,
+    "images": [
+      "https://images.pexels.com/photos/1961795/pexels-photo-1961795.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "solid",
+    "type": "Solid",
+    "notes": {
+      "top": ["Bergamot", "Black Pepper"],
+      "heart": ["Iris", "Rose"],
+      "base": ["Oud", "Musk"]
+    },
+    "longevity": 6,
+    "sillage": "soft",
+    "rating": 4.4,
+    "stock": 35,
+    "description": "The travel-friendly solid version of our bestselling Midnight Noir.",
+    "isNew": true
+  },
+  {
+    "id": "apex-fresh-6",
+    "name": "Ocean Breeze",
+    "brand": "Aura Essence",
+    "price": 140,
+    "images": [
+      "https://images.pexels.com/photos/2885320/pexels-photo-2885320.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "unisex",
+    "type": "EDT",
+    "notes": {
+      "top": ["Sea Salt", "Mint", "Lemon"],
+      "heart": ["Water Lily", "Cyclamen", "Freesia"],
+      "base": ["Driftwood", "Ambergris", "Clean Musk"]
+    },
+    "longevity": 7,
+    "sillage": "moderate",
+    "rating": 4.5,
+    "stock": 28,
+    "description": "A refreshing aquatic fragrance that captures the essence of ocean waves."
+  },
+  {
+    "id": "apex-spicy-7",
+    "name": "Spice Market",
+    "brand": "Aura Essence",
+    "price": 175,
+    "images": [
+      "https://images.pexels.com/photos/1188440/pexels-photo-1188440.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/1128678/pexels-photo-1128678.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "men",
+    "type": "EDP",
+    "notes": {
+      "top": ["Cinnamon", "Star Anise", "Clove"],
+      "heart": ["Cardamom", "Nutmeg", "Saffron"],
+      "base": ["Tobacco", "Leather", "Amber"]
+    },
+    "longevity": 9,
+    "sillage": "strong",
+    "rating": 4.6,
+    "stock": 22,
+    "description": "An intoxicating blend of exotic spices and rich tobacco notes."
+  },
+  {
+    "id": "apex-vanilla-8",
+    "name": "Vanilla Dreams",
+    "brand": "Aura Essence",
+    "price": 165,
+    "images": [
+      "https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/1191710/pexels-photo-1191710.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "women",
+    "type": "EDP",
+    "notes": {
+      "top": ["Raspberry", "Pink Grapefruit", "Mandarin"],
+      "heart": ["Jasmine", "Tuberose", "Orange Blossom"],
+      "base": ["Vanilla", "Tonka Bean", "Cashmere Wood"]
+    },
+    "longevity": 8,
+    "sillage": "moderate",
+    "rating": 4.7,
+    "stock": 19,
+    "description": "A sweet and sensual fragrance with creamy vanilla and delicate florals."
+  },
+  {
+    "id": "apex-green-9",
+    "name": "Garden Path",
+    "brand": "Aura Essence",
+    "price": 155,
+    "images": [
+      "https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/2885320/pexels-photo-2885320.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "unisex",
+    "type": "EDT",
+    "notes": {
+      "top": ["Green Leaves", "Basil", "Mint"],
+      "heart": ["Lily of the Valley", "Green Tea", "Bamboo"],
+      "base": ["White Cedar", "Vetiver", "Light Musk"]
+    },
+    "longevity": 6,
+    "sillage": "soft",
+    "rating": 4.3,
+    "stock": 30,
+    "description": "A crisp green fragrance that evokes walking through a lush garden."
+  },
+  {
+    "id": "apex-amber-10",
+    "name": "Desert Amber",
+    "brand": "Aura Essence",
+    "price": 210,
+    "images": [
+      "https://images.pexels.com/photos/1961795/pexels-photo-1961795.jpeg?auto=compress&cs=tinysrgb&w=500",
+      "https://images.pexels.com/photos/1188440/pexels-photo-1188440.jpeg?auto=compress&cs=tinysrgb&w=500"
+    ],
+    "category": "unisex",
+    "type": "Extrait",
+    "notes": {
+      "top": ["Saffron", "Pink Pepper", "Artemisia"],
+      "heart": ["Rose", "Jasmine", "Amberwood"],
+      "base": ["Ambergris", "Cedar", "Musk"]
+    },
+    "longevity": 14,
+    "sillage": "strong",
+    "rating": 4.8,
+    "stock": 15,
+    "description": "A luxurious amber composition with precious saffron and exotic woods.",
+    "isBestSeller": true
+  }
+]
