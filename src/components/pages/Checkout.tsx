@@ -95,7 +95,7 @@ export function Checkout() {
         key,
         amount: amountPaise,
         currency: 'INR',
-        name: 'Aura Essence Fragrances',
+        name: 'Aura Élixir',
         description: 'Order Payment',
         order_id: rpOrder.id,
         prefill: {

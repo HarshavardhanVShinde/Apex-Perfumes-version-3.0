@@ -34,7 +34,7 @@ export function Signup() {
       if (success) {
         showToast({
           title: 'Account created',
-          description: 'Welcome to Aura Essence! You are signed in.',
+          description: 'Welcome to Aura Élixir! You are signed in.',
           variant: 'success'
         });
         router.push('/');

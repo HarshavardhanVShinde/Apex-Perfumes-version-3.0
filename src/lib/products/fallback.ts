@@ -13,7 +13,7 @@ function slugify(value: string): string {
 }
 
 function normaliseFallbackProduct(raw: Partial<Product>): Product {
-  const fallbackIdSource = `${raw.name ?? 'product'}-${raw.brand ?? 'aura essence'}`;
+  const fallbackIdSource = `${raw.name ?? 'product'}-${raw.brand ?? 'aura élixir'}`;
   const safeId = raw.id ? String(raw.id) : `fallback-${slugify(fallbackIdSource)}`;
 
   const safeNotes = {
@@ -48,8 +48,8 @@ function normaliseFallbackProduct(raw: Partial<Product>): Product {
 
   return {
     id: safeId,
-    name: raw.name ?? 'Aura Essence Fragrance',
-    brand: raw.brand ?? 'Aura Essence',
+    name: raw.name ?? 'Aura Élixir Fragrance',
+    brand: raw.brand ?? 'Aura Élixir',
     price: typeof raw.price === 'number' ? raw.price : Number(raw.price ?? 0),
     originalPrice: raw.originalPrice !== undefined
       ? (typeof raw.originalPrice === 'number' ? raw.originalPrice : Number(raw.originalPrice))

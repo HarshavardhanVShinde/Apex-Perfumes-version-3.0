@@ -33,7 +33,7 @@ export function Terms() {
               Agreement to Terms
             </h2>
             <p className="mb-4">
-              These Terms of Service ("Terms") govern your use of the Aura Essence website and 
+              These Terms of Service ("Terms") govern your use of the Aura Élixir website and 
               services. By accessing or using our services, you agree to be bound by these Terms.
             </p>
           </section>
@@ -131,7 +131,7 @@ export function Terms() {
             </h2>
             <p className="mb-4">
               All content on our website, including text, graphics, logos, and images, is owned by 
-              Aura Essence and protected by intellectual property laws. You may not use our 
+              Aura Élixir and protected by intellectual property laws. You may not use our 
               content without written permission.
             </p>
           </section>

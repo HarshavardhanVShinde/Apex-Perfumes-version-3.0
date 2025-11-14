@@ -4,10 +4,7 @@ import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cart';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getProduct } from '@/lib/supabase/products';
-import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 import type { CartItem as CartItemType } from '@/types';
 import Image from 'next/image';
 
@@ -70,14 +67,9 @@ export function CartDrawer() {
     });
 
     try {
-      const supabaseProduct = await getProduct(item.product.id);
-      if (!supabaseProduct) {
-        throw new Error('Product not found');
-      }
-
-      const mappedProduct = mapProductRowToProduct(supabaseProduct);
-      await addItem(mappedProduct, item.quantity, newSize);
-      await removeItem(item.id, item.product.id, oldSizeValue);
+      await addItem(item.product, item.quantity, newSize, { skipReload: true });
+      await removeItem(item.id, item.product.id, oldSizeValue, { skipReload: true });
+      await useCartStore.getState().loadCart();
     } catch (error) {
       console.error('Error changing size:', error);
       await useCartStore.getState().loadCart();
@@ -92,6 +84,7 @@ export function CartDrawer() {
   };
 
   const handleQuantityChange = async (item: CartItemType, newQuantity: number) => {
+    if (newQuantity === item.quantity) return;
     const sizeValue = item.selectedSize ?? null;
     const itemKey = buildLoadingKey(item.id, sizeValue);
     setLoadingItems(prev => new Set(prev).add(itemKey));
@@ -115,17 +108,31 @@ export function CartDrawer() {
     setLoadingItems(prev => new Set(prev).add(itemKey));
 
     try {
-      await removeItem(item.id, item.product.id, item.selectedSize ?? null);
+      await removeItem(item.id, item.product.id, sizeValue);
     } catch (error) {
       console.error('Error removing cart item:', error);
     } finally {
       setLoadingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemKey);
-        return newSet;
+        const next = new Set(prev);
+        next.delete(itemKey);
+        return next;
       });
     }
   };
+
+  // Prevent body scroll when cart is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
   if (!isOpen) return null;
 
   return (
@@ -320,35 +327,17 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-slate-200 dark:border-slate-700 p-6 bg-gradient-to-t from-slate-100 to-white dark:from-slate-900 dark:to-slate-950 space-y-4 shadow-2xl">
-            <div className="space-y-3 bg-white dark:bg-slate-900 p-5 rounded-xl border-2 border-slate-200 dark:border-slate-800 shadow-lg">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600 dark:text-gray-400 font-semibold">Subtotal</span>
-                <span className="text-slate-900 dark:text-white font-bold">{formatPrice(totals.subtotal)}</span>
-              </div>
-
-              {totals.discount > 0 && (
-                <div className="flex justify-between text-sm bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-2 border-green-200 dark:border-green-800">
-                  <span className="text-green-700 dark:text-green-400 font-semibold">Discount</span>
-                  <span className="text-green-700 dark:text-green-400 font-bold">-{formatPrice(totals.discount)}</span>
-                </div>
-              )}
-
-              {totals.promotionText && (
-                <div className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-3 font-semibold">
-                  ✓ {totals.promotionText}
-                </div>
-              )}
-
-              <div className="flex justify-between pt-3 border-t-2 border-slate-200 dark:border-slate-700">
-                <span className="text-slate-900 dark:text-white font-bold text-base">Total</span>
-                <span className="text-xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">{formatPrice(totals.total)}</span>
+          <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-gradient-to-t from-slate-100 to-white dark:from-slate-900 dark:to-slate-950 space-y-3 shadow-2xl">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 shadow-lg">
+              <div className="flex justify-between">
+                <span className="text-slate-900 dark:text-white font-bold text-lg">Total</span>
+                <span className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">{formatPrice(totals.total)}</span>
               </div>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Button 
-                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3.5 text-base transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-2.5 text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]"
                 onClick={() => {
                   // Close the drawer first so the close animation can play,
                   // then navigate to the checkout page after a short delay.
@@ -361,7 +350,7 @@ export function CartDrawer() {
               <Button 
                 type="button"
                 variant="secondary"
-                className="w-full border-2 border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-bold py-3 transition-all duration-300"
+                className="w-full border-2 border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-bold py-2 text-sm transition-all duration-300"
                 onClick={closeCart}
               >
                 Continue Shopping

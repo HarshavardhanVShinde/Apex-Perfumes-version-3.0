@@ -210,6 +210,7 @@ export interface Database {
           user_id: string
           product_id: string
           quantity: number
+          selected_size: string | null
           created_at: string
           updated_at: string
         }
@@ -218,6 +219,7 @@ export interface Database {
           user_id: string
           product_id: string
           quantity: number
+          selected_size?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -226,6 +228,7 @@ export interface Database {
           user_id?: string
           product_id?: string
           quantity?: number
+          selected_size?: string | null
           created_at?: string
           updated_at?: string
         }

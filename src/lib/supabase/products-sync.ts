@@ -109,7 +109,7 @@ export async function enhanceCartItemsWithProductData(cartItems: any[]): Promise
         product_name: 'Unknown Product',
         product_price: 799,
         product_images: ['/perfume-logo.png'],
-        product_brand: 'Aura Essence',
+        product_brand: 'Aura Élixir',
         product_type: 'EDP'
       });
     }

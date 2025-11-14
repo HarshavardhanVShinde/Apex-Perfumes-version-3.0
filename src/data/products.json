@@ -2,7 +2,7 @@
   {
     "id": "apex-noir-1",
     "name": "Midnight Noir",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 180,
     "images": [
       "https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -26,7 +26,7 @@
   {
     "id": "apex-citrus-2",
     "name": "Golden Dawn",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 150,
     "originalPrice": 180,
     "images": [
@@ -50,7 +50,7 @@
   {
     "id": "apex-floral-3",
     "name": "Royal Rose",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 220,
     "images": [
       "https://images.pexels.com/photos/1188440/pexels-photo-1188440.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -73,7 +73,7 @@
   {
     "id": "apex-woody-4",
     "name": "Forest King",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 195,
     "images": [
       "https://images.pexels.com/photos/1128678/pexels-photo-1128678.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -96,7 +96,7 @@
   {
     "id": "apex-solid-5",
     "name": "Travel Noir",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 65,
     "images": [
       "https://images.pexels.com/photos/1961795/pexels-photo-1961795.jpeg?auto=compress&cs=tinysrgb&w=500"
@@ -118,7 +118,7 @@
   {
     "id": "apex-fresh-6",
     "name": "Ocean Breeze",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 140,
     "images": [
       "https://images.pexels.com/photos/2885320/pexels-photo-2885320.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -140,7 +140,7 @@
   {
     "id": "apex-spicy-7",
     "name": "Spice Market",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 175,
     "images": [
       "https://images.pexels.com/photos/1188440/pexels-photo-1188440.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -162,7 +162,7 @@
   {
     "id": "apex-vanilla-8",
     "name": "Vanilla Dreams",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 165,
     "images": [
       "https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -184,7 +184,7 @@
   {
     "id": "apex-green-9",
     "name": "Garden Path",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 155,
     "images": [
       "https://images.pexels.com/photos/965989/pexels-photo-965989.jpeg?auto=compress&cs=tinysrgb&w=500",
@@ -206,7 +206,7 @@
   {
     "id": "apex-amber-10",
     "name": "Desert Amber",
-    "brand": "Aura Essence",
+    "brand": "Aura Élixir",
     "price": 210,
     "images": [
       "https://images.pexels.com/photos/1961795/pexels-photo-1961795.jpeg?auto=compress&cs=tinysrgb&w=500",

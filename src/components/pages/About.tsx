@@ -41,11 +41,11 @@ export function About() {
             <span className="text-amber-400 text-xs sm:text-sm font-semibold tracking-widest">OUR STORY</span>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-wider text-white mb-4 sm:mb-6 leading-tight">
-            The Aura Essence Story
+            The Aura Élixir Story
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-100 tracking-wide font-light max-w-3xl mx-auto leading-relaxed">
             Born from a passion for extraordinary fragrance and an unwavering commitment to excellence, 
-            Aura Essence represents the pinnacle of luxury perfumery.
+            Aura Élixir represents the pinnacle of luxury perfumery.
           </p>
         </div>
       </section>
@@ -59,7 +59,7 @@ export function About() {
               Our Beginning
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-gray-300 mb-4 leading-relaxed">
-              Aura Essence was founded in 2020 by a team of fragrance enthusiasts who believed that luxury 
+              Aura Élixir was founded in 2020 by a team of fragrance enthusiasts who believed that luxury 
               perfumery had lost touch with its artisanal roots. We set out to create a brand that 
               would honor the traditional craftsmanship of perfume-making while embracing modern 
               innovation and sustainability.
@@ -70,7 +70,7 @@ export function About() {
               the world, we developed our first collection of distinctive fragrances.
             </p>
             <p className="text-slate-600 dark:text-gray-300 leading-relaxed text-lg">
-              Today, Aura Essence has grown into a globally recognized luxury fragrance house, but we remain 
+              Today, Aura Élixir has grown into a globally recognized luxury fragrance house, but we remain 
               true to our founding principles: uncompromising quality, artistic integrity, and the 
               belief that fragrance is the ultimate form of personal expression.
             </p>
@@ -78,7 +78,7 @@ export function About() {
           <div className="relative">
             <img
               src="https://images.pexels.com/photos/1191710/pexels-photo-1191710.jpeg?auto=compress&cs=tinysrgb&w=800"
-              alt="Aura Essence atelier"
+              alt="Aura Élixir atelier"
               className="rounded-lg shadow-2xl"
             />
           </div>
@@ -127,7 +127,7 @@ export function About() {
                 Our Process
               </h2>
               <p className="text-slate-600 dark:text-gray-300 mb-4 leading-relaxed text-lg">
-                Each Aura Essence fragrance begins with a concept—a moment, emotion, or memory that we want 
+                Each Aura Élixir fragrance begins with a concept—a moment, emotion, or memory that we want 
                 to capture in scent. Our master perfumers then embark on a journey of discovery, 
                 selecting and blending the finest ingredients to bring that vision to life.
               </p>
@@ -138,7 +138,7 @@ export function About() {
               </p>
               <p className="text-slate-600 dark:text-gray-300 leading-relaxed text-lg">
                 The creation process can take months or even years, with countless iterations and 
-                refinements until we achieve the perfect balance and complexity that defines an Aura Essence fragrance.
+                refinements until we achieve the perfect balance and complexity that defines an Aura Élixir fragrance.
               </p>
             </div>
           </div>
@@ -152,7 +152,7 @@ export function About() {
               Our Team
             </h2>
             <p className="text-slate-600 dark:text-gray-300 max-w-3xl mx-auto mb-12 leading-relaxed text-lg">
-              Behind every Aura Essence fragrance is a team of passionate individuals dedicated to the art of 
+              Behind every Aura Élixir fragrance is a team of passionate individuals dedicated to the art of 
               perfumery. From our master perfumers to our sustainability experts, each team member 
               brings unique expertise and creativity to our mission.
             </p>
@@ -205,7 +205,7 @@ export function About() {
               Looking Forward
             </h2>
             <p className="text-gray-100 max-w-3xl mx-auto leading-relaxed text-lg">
-              As we continue to grow, Aura Essence remains committed to pushing the boundaries of luxury 
+              As we continue to grow, Aura Élixir remains committed to pushing the boundaries of luxury 
               fragrance while staying true to our core values. We're excited about expanding our 
               collections, exploring new sustainable practices, and continuing to create fragrances 
               that inspire and delight fragrance lovers around the world.

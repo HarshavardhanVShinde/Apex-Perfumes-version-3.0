@@ -34,7 +34,7 @@ export function Login() {
       if (success) {
         showToast({
           title: 'Signed in',
-          description: 'Welcome back to Aura Essence!',
+          description: 'Welcome back to Aura Élixir!',
           variant: 'success'
         });
         router.push('/');

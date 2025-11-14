@@ -13,6 +13,10 @@ import { useAuthStore } from '@/stores/auth';
 import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 const CART_CACHE_KEY = 'apex_cart_v1'
 
+interface CartMutationOptions {
+  skipReload?: boolean
+}
+
 interface CartTotalsState {
   subtotal: number;
   discount: number;
@@ -26,8 +30,8 @@ interface CartState {
   isOpen: boolean;
   isLoading: boolean;
   error: string | null;
-  addItem: (product: Product, quantity?: number, selectedSize?: string) => Promise<void>;
-  removeItem: (cartItemId: string, productId: string, selectedSize?: string | null) => Promise<void>;
+  addItem: (product: Product, quantity?: number, selectedSize?: string, options?: CartMutationOptions) => Promise<void>;
+  removeItem: (cartItemId: string, productId: string, selectedSize?: string | null, options?: CartMutationOptions) => Promise<void>;
   updateQuantity: (cartItemId: string, productId: string, quantity: number, selectedSize?: string | null) => Promise<void>;
   clearCart: () => Promise<void>;
   openCart: () => void;
@@ -57,7 +61,7 @@ function buildFallbackProduct(
   return {
     id: productId,
     name: productName || 'Unknown Product',
-    brand: 'Aura Essence',
+    brand: 'Aura Élixir',
     price,
     images: images && images.length > 0 ? images : ['/perfume-logo.png'],
     category: 'unisex',
@@ -81,7 +85,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  addItem: async (product: Product, quantity = 1, selectedSize = '100ml') => {
+  addItem: async (product: Product, quantity = 1, selectedSize = '100ml', options?: CartMutationOptions) => {
     const user = useAuthStore.getState().user;
 
     if (!user) {
@@ -93,7 +97,9 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       set({ error: null });
       await addToCart(user.id, product.id, quantity, selectedSize);
-      await get().loadCart();
+      if (!options?.skipReload) {
+        await get().loadCart();
+      }
       set({ isOpen: true });
     } catch (error) {
       console.error('Error adding item to cart:', error);
@@ -102,7 +108,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
 
-  removeItem: async (cartItemId: string, productId: string, selectedSize: string | null = null) => {
+  removeItem: async (cartItemId: string, productId: string, selectedSize: string | null = null, options?: CartMutationOptions) => {
     const user = useAuthStore.getState().user;
 
     if (!user) {
@@ -119,7 +125,9 @@ export const useCartStore = create<CartState>((set, get) => ({
         productId,
         selectedSize,
       });
-      await get().loadCart();
+      if (!options?.skipReload) {
+        await get().loadCart();
+      }
     } catch (error) {
       console.error('Error removing item from cart:', error);
       set({ error: 'Failed to remove item from cart' });
@@ -219,7 +227,10 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const cartItems = await getCartItems(user.id);
+      const [cartItems, totalsResponse] = await Promise.all([
+        getCartItems(user.id),
+        calculateCartTotal(user.id),
+      ]);
       const productIds = Array.from(new Set(cartItems.map(item => item.product_id))).filter(Boolean);
 
       let productMap = new Map<string, Product>();
@@ -257,8 +268,6 @@ export const useCartStore = create<CartState>((set, get) => ({
           lineTotal: ci.total_price,
         };
       });
-
-      const totalsResponse = await calculateCartTotal(user.id);
 
       const resolvedTotals: CartTotalsState = {
         subtotal: totalsResponse.subtotal ?? 0,

@@ -64,7 +64,7 @@ export function mapProductRowToProduct(row: SupabaseProductRow): Product {
   return {
     id: String(row.id),
     name: row.name || '',
-    brand: row.brand || 'Aura Essence',
+    brand: row.brand || 'Aura Élixir',
     price: Number(row.price ?? 0),
     originalPrice: row.original_price ?? undefined,
     images,

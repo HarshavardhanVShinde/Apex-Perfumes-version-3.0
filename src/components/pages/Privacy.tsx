@@ -33,7 +33,7 @@ export function Privacy() {
               Introduction
             </h2>
             <p className="mb-4">
-              Aura Essence ("we," "our," or "us") respects your privacy and is committed to protecting 
+              Aura Élixir ("we," "our," or "us") respects your privacy and is committed to protecting 
               your personal information. This Privacy Policy explains how we collect, use, disclose, and 
               safeguard your information when you visit our website and make purchases from us.
             </p>

@@ -77,7 +77,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-40 bg-white dark:bg-slate-950 border-b border-gray-200 dark:border-slate-800 shadow-sm">
+    <nav className="sticky top-0 z-40 bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-b border-gray-200 dark:border-slate-700/50 shadow-sm dark:shadow-slate-900/20 backdrop-blur-sm dark:backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu button */}
@@ -86,7 +86,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-slate-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              className="text-slate-900 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -99,7 +99,7 @@ export function Navbar() {
               className="hover:opacity-80 transition-opacity group"
             >
               <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent hover:from-purple-300 hover:to-purple-700 transition-all duration-300">
-                AURA
+                Aura Élixir
               </span>
             </Link>
           </div>
@@ -110,7 +110,7 @@ export function Navbar() {
             <div className="relative" ref={collectionsRef}>
               <Button
                 variant="ghost"
-                className="flex items-center space-x-1 text-slate-700 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors"
+                className="flex items-center space-x-1 text-slate-700 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors"
                 onClick={() => setIsCollectionsOpen(!isCollectionsOpen)}
               >
                 <span>Collections</span>
@@ -118,12 +118,12 @@ export function Navbar() {
               </Button>
               
               {isCollectionsOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50 animate-slide-up">
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gradient-to-b dark:from-slate-800 dark:to-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600/50 py-2 z-50 animate-slide-up backdrop-blur-sm">
                   {collections.map(collection => (
                     <Link
                       key={collection.slug}
                       href={`/collections/${collection.slug}`}
-                      className="block px-4 py-2.5 text-sm text-slate-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
+                      className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
                       onClick={() => setIsCollectionsOpen(false)}
                     >
                       {collection.name}
@@ -141,7 +141,7 @@ export function Navbar() {
                   placeholder="Search fragrances..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 pl-10 border-gray-300 dark:border-slate-700 focus:border-amber-400 focus:ring-amber-400 rounded-lg"
+                  className="w-64 pl-10 border-gray-300 dark:border-slate-600 focus:border-amber-400 focus:ring-amber-400 rounded-lg bg-white dark:bg-slate-800/50 backdrop-blur-sm"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
@@ -155,7 +155,7 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="p-2 text-slate-700 dark:text-gray-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+              className="p-2 text-slate-700 dark:text-slate-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
               title="Toggle dark mode"
             >
               {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
@@ -166,7 +166,7 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               >
                 {user ? (
@@ -175,28 +175,28 @@ export function Navbar() {
                     {getInitials(user.email || 'User')}
                   </div>
                 ) : (
-                  <User className="h-5 w-5 text-slate-700 dark:text-gray-300" />
+                  <User className="h-5 w-5 text-slate-700 dark:text-slate-200" />
                 )}
               </Button>
               
               {isUserMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50 animate-slide-up">
+                <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gradient-to-b dark:from-slate-800 dark:to-slate-900 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600/50 py-2 z-50 animate-slide-up backdrop-blur-sm">
                   {user ? (
                     <>
                       <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-t-lg">
-                        <p className="text-xs uppercase tracking-widest text-amber-700 dark:text-amber-400 font-semibold">Account</p>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white mt-1 truncate" title={user.email}>{user.email}</p>
+                        <p className="text-xs uppercase tracking-widest text-amber-700 dark:text-amber-300 font-semibold">Account</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100 mt-1 truncate" title={user.email}>{user.email}</p>
                       </div>
                       <Link
                         href="/account"
-                        className="block px-4 py-2.5 text-sm text-slate-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
+                        className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         My Account
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium border-t border-gray-200 dark:border-slate-700"
+                        className="block w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium border-t border-gray-200 dark:border-slate-600/50"
                       >
                         Sign Out
                       </button>
@@ -205,14 +205,14 @@ export function Navbar() {
                     <>
                       <Link
                         href="/auth/login"
-                        className="block px-4 py-2.5 text-sm text-slate-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
+                        className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Sign In
                       </Link>
                       <Link
                         href="/auth/signup"
-                        className="block px-4 py-2.5 text-sm text-slate-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium border-t border-gray-200 dark:border-slate-700"
+                        className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium border-t border-gray-200 dark:border-slate-600/50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Sign Up
@@ -227,7 +227,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 relative text-slate-700 dark:text-gray-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+              className="p-2 relative text-slate-700 dark:text-slate-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
               onClick={openCart}
               title="Open shopping cart"
             >
@@ -243,7 +243,7 @@ export function Navbar() {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 dark:border-slate-800 py-4 space-y-4">
+          <div className="md:hidden border-t border-gray-200 dark:border-slate-600/50 py-4 space-y-4">
             {/* Mobile search */}
             <form onSubmit={handleSearch} className="px-2">
               <Input
@@ -251,13 +251,13 @@ export function Navbar() {
                 placeholder="Search fragrances..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full border-gray-300 dark:border-slate-700 focus:border-amber-400 focus:ring-amber-400 rounded-lg"
+                className="w-full border-gray-300 dark:border-slate-600 focus:border-amber-400 focus:ring-amber-400 rounded-lg bg-white dark:bg-slate-800/50 backdrop-blur-sm"
               />
             </form>
 
             {/* Mobile collections */}
             <div className="px-2">
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2 text-sm uppercase tracking-widest text-amber-600 dark:text-amber-400">Collections</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2 text-sm uppercase tracking-widest text-amber-600 dark:text-amber-300">Collections</h3>
               <div className="space-y-2">
                 {collections.map(collection => (
                   <Link
