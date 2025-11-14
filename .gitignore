@@ -2,3 +2,7 @@ node_modules
 .next
 .env.local
 *.md
+ .cursor/
+.vscode/mcp.json.bak
+.cursor
+neon/

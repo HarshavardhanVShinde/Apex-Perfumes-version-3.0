@@ -7,12 +7,26 @@ import { ProductCard } from '@/components/commerce/ProductCard';
 import { fetchFeatured, fetchProducts } from '@/lib/api/products';
 import type { Product } from '@/types';
 
-export function Home() {
-  const [bestSellers, setBestSellers] = useState<Product[]>([]);
-  const [menProducts, setMenProducts] = useState<Product[]>([]);
-  const [womenProducts, setWomenProducts] = useState<Product[]>([]);
-  const [newProducts, setNewProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+type HomeProps = {
+  initialBestSellers?: Product[];
+  initialNewProducts?: Product[];
+  initialMenProducts?: Product[];
+  initialWomenProducts?: Product[];
+  prefetched?: boolean;
+};
+
+export function Home({
+  initialBestSellers = [],
+  initialNewProducts = [],
+  initialMenProducts = [],
+  initialWomenProducts = [],
+  prefetched = false,
+}: HomeProps) {
+  const [bestSellers, setBestSellers] = useState<Product[]>(initialBestSellers);
+  const [menProducts, setMenProducts] = useState<Product[]>(initialMenProducts);
+  const [womenProducts, setWomenProducts] = useState<Product[]>(initialWomenProducts);
+  const [newProducts, setNewProducts] = useState<Product[]>(initialNewProducts);
+  const [loading, setLoading] = useState(!prefetched);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mountedRef = useRef(true);
 
@@ -68,9 +82,9 @@ export function Home() {
       }
 
       if (featuredResult.status === 'rejected' && menResult.status === 'rejected' && womenResult.status === 'rejected') {
-        setErrorMessage('Unable to reach Supabase right now.');
+        setErrorMessage('Unable to reach the server right now.');
       } else if (featuredResult.status === 'rejected' || menResult.status === 'rejected' || womenResult.status === 'rejected') {
-        setErrorMessage('Some sections failed to load from Supabase.');
+        setErrorMessage('Some sections failed to load.');
       } else {
         setErrorMessage(null);
       }
@@ -84,7 +98,7 @@ export function Home() {
       setNewProducts([]);
       setMenProducts([]);
       setWomenProducts([]);
-      setErrorMessage('Unable to load products from Supabase.');
+      setErrorMessage('Unable to load products.');
     } finally {
       if (mountedRef.current) {
         setLoading(false);
@@ -94,12 +108,13 @@ export function Home() {
 
   useEffect(() => {
     mountedRef.current = true;
-    void loadProducts();
-
+    if (!prefetched) {
+      void loadProducts();
+    }
     return () => {
       mountedRef.current = false;
     };
-  }, [loadProducts]);
+  }, [loadProducts, prefetched]);
 
   const handleRetry = useCallback(() => {
     if (!loading) {

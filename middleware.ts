@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { stackServerApp } from './src/stack/server'
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone()
@@ -13,19 +13,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const user = await stackServerApp.getUser({ tokenStore: req });
 
-  if (!session) {
-    url.pathname = '/auth/login'
-    url.searchParams.set('redirect', pathname)
+  if (!user) {
+    url.pathname = '/handler/sign-in'
+    url.searchParams.set('after_auth_return_to', pathname)
     return NextResponse.redirect(url)
   }
 
-  return res
+  return NextResponse.next()
 }
 
 export const config = {

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useThemeStore } from '@/stores/theme';
 import { useCartStore } from '@/stores/cart';
-import { useAuthStore } from '@/stores/auth';
+import { useUser, useStackApp } from '@stackframe/stack';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -38,8 +38,17 @@ export function Navbar() {
   
   const { theme, toggleTheme } = useThemeStore();
   const { openCart, getItemCount } = useCartStore();
-  const { user, logout } = useAuthStore();
+  const stackUser = useUser({ or: 'return-null' });
+  const stackApp = useStackApp();
   const router = useRouter();
+  
+  // Convert Stack user to simplified user object
+  const user = stackUser ? {
+    id: stackUser.id,
+    email: stackUser.primaryEmail || '',
+    firstName: stackUser.displayName?.split(' ')[0] || '',
+    lastName: stackUser.displayName?.split(' ').slice(1).join(' ') || '',
+  } : null;
 
   // Click outside handler
   useEffect(() => {
@@ -71,9 +80,10 @@ export function Navbar() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await stackApp.signOut();
     setIsUserMenuOpen(false);
+    router.push('/');
   };
 
   return (
@@ -204,14 +214,14 @@ export function Navbar() {
                   ) : (
                     <>
                       <Link
-                        href="/auth/login"
+                        href="/handler/sign-in"
                         className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Sign In
                       </Link>
                       <Link
-                        href="/auth/signup"
+                        href="/handler/sign-up"
                         className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium border-t border-gray-200 dark:border-slate-600/50"
                         onClick={() => setIsUserMenuOpen(false)}
                       >

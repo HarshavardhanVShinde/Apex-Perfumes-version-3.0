@@ -14,47 +14,45 @@ import type { Product as AppProduct } from '@/types';
 
 type Product = AppProduct;
 
-export function ProductDetail() {
+type ProductDetailProps = {
+  initialProduct?: AppProduct | null;
+  initialRelated?: AppProduct[];
+  prefetched?: boolean;
+};
+
+export function ProductDetail({ initialProduct = null, initialRelated = [], prefetched = false }: ProductDetailProps) {
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!prefetched);
   const [error, setError] = useState<string | null>(null);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<AppProduct[]>([]);
+  const [product, setProduct] = useState<Product | null>(initialProduct);
+  const [relatedProducts, setRelatedProducts] = useState<AppProduct[]>(initialRelated);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('100ml');
-  const [currentPrice, setCurrentPrice] = useState<number>(799);
+  const [currentPrice, setCurrentPrice] = useState<number>(699);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
 
-  // Fetch product and related products via API
+  // Fetch product and related products via API if not prefetched
   useEffect(() => {
+    if (prefetched) return;
     async function loadProductData() {
       if (!id) return;
-      
       try {
         setIsLoading(true);
         setError(null);
-        
-        // Fetch the product
         const productData = await fetchProductApi(id);
-        
         if (!productData) {
           setError('Product not found');
           setProduct(null);
           return;
         }
-        
-        setProduct(productData);
-        
-        // Fetch related products from the same category
+        setProduct(productData as any);
         try {
           const response = await fetchProducts({ category: productData.category, page: 1, limit: 4 });
-          const related = response.products
-            .filter(p => p.id !== id)
-            .slice(0, 4);
+          const related = response.products.filter(p => p.id !== id).slice(0, 4);
           setRelatedProducts(related);
         } catch (err) {
           console.error('Error fetching related products:', err);
@@ -68,9 +66,8 @@ export function ProductDetail() {
         setIsLoading(false);
       }
     }
-    
     loadProductData();
-  }, [id]);
+  }, [id, prefetched]);
 
   // Show loading state while params are being resolved
   if (isLoading || !id) {
@@ -130,9 +127,9 @@ export function ProductDetail() {
   const getSizePrice = (): number => {
     const sizes = product?.sizes as any;
     if (sizes && sizes[selectedSize]) {
-      return sizes[selectedSize].price || 799;
+      return sizes[selectedSize].price || (selectedSize === '20ml' ? 349 : selectedSize === '50ml' ? 499 : 699);
     }
-    return 799;
+    return selectedSize === '20ml' ? 349 : selectedSize === '50ml' ? 499 : 699;
   };
 
   const getSillageDescription = (sillage: string) => {
@@ -343,7 +340,7 @@ export function ProductDetail() {
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {['20ml', '50ml', '100ml'].map((size) => {
                     const sizes = product.sizes as any;
-                    const price = sizes?.[size]?.price || (size === '20ml' ? 349 : size === '50ml' ? 599 : 799);
+                    const price = sizes?.[size]?.price || (size === '20ml' ? 349 : size === '50ml' ? 499 : 699);
                     return (
                       <button
                         key={size}

@@ -1,16 +1,5 @@
 import { create } from 'zustand';
 import type { Product, CartItem } from '@/types';
-import {
-  addToCart,
-  removeFromCart,
-  updateCartItemQuantity,
-  clearCart as clearSupabaseCart,
-  getCartItems,
-  calculateCartTotal,
-} from '@/lib/supabase/cart';
-import { supabase } from '@/lib/supabase/client';
-import { useAuthStore } from '@/stores/auth';
-import { mapProductRowToProduct } from '@/lib/supabase/mappers';
 const CART_CACHE_KEY = 'apex_cart_v1'
 
 interface CartMutationOptions {
@@ -30,6 +19,7 @@ interface CartState {
   isOpen: boolean;
   isLoading: boolean;
   error: string | null;
+  couponCode?: string;
   addItem: (product: Product, quantity?: number, selectedSize?: string, options?: CartMutationOptions) => Promise<void>;
   removeItem: (cartItemId: string, productId: string, selectedSize?: string | null, options?: CartMutationOptions) => Promise<void>;
   updateQuantity: (cartItemId: string, productId: string, quantity: number, selectedSize?: string | null) => Promise<void>;
@@ -43,6 +33,8 @@ interface CartState {
   loadCart: () => Promise<void>;
   setError: (error: string | null) => void;
   clearError: () => void;
+  applyCoupon: (code: string) => Promise<void>;
+  clearCoupon: () => Promise<void>;
 }
 
 const EMPTY_TOTALS: CartTotalsState = {
@@ -84,66 +76,70 @@ export const useCartStore = create<CartState>((set, get) => ({
   isOpen: false,
   isLoading: false,
   error: null,
+  couponCode: undefined,
 
   addItem: async (product: Product, quantity = 1, selectedSize = '100ml', options?: CartMutationOptions) => {
-    const user = useAuthStore.getState().user;
-
-    if (!user) {
-      const message = 'Please sign in to add items to your cart.';
-      set({ error: message, isOpen: true });
-      throw new Error(message);
-    }
-
     try {
       set({ error: null });
-      await addToCart(user.id, product.id, quantity, selectedSize);
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'add',
+          productId: product.id,
+          quantity,
+          selectedSize,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to add item' }));
+        throw new Error(errorData.error || 'Failed to add item to cart');
+      }
+
       if (!options?.skipReload) {
         await get().loadCart();
       }
-      set({ isOpen: true });
+      // Don't auto-open cart, just update the count
     } catch (error) {
       console.error('Error adding item to cart:', error);
-      set({ error: 'Failed to add item to cart' });
+      const message = error instanceof Error ? error.message : 'Failed to add item to cart';
+      set({ error: message });
       throw error;
     }
   },
 
   removeItem: async (cartItemId: string, productId: string, selectedSize: string | null = null, options?: CartMutationOptions) => {
-    const user = useAuthStore.getState().user;
-
-    if (!user) {
-      const message = 'Please sign in to manage your cart.';
-      set({ error: message, isOpen: true });
-      throw new Error(message);
-    }
-
     try {
       set({ error: null });
-      await removeFromCart({
-        userId: user.id,
-        cartItemId,
-        productId,
-        selectedSize,
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'remove',
+          cartItemId,
+          productId,
+          selectedSize,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to remove item' }));
+        throw new Error(errorData.error || 'Failed to remove item from cart');
+      }
+
       if (!options?.skipReload) {
         await get().loadCart();
       }
     } catch (error) {
       console.error('Error removing item from cart:', error);
-      set({ error: 'Failed to remove item from cart' });
+      const message = error instanceof Error ? error.message : 'Failed to remove item from cart';
+      set({ error: message });
       throw error;
     }
   },
 
   updateQuantity: async (cartItemId: string, productId: string, quantity: number, selectedSize: string | null = null) => {
-    const user = useAuthStore.getState().user;
-
-    if (!user) {
-      const message = 'Please sign in to manage your cart.';
-      set({ error: message, isOpen: true });
-      throw new Error(message);
-    }
-
     if (quantity <= 0) {
       await get().removeItem(cartItemId, productId, selectedSize);
       return;
@@ -151,57 +147,66 @@ export const useCartStore = create<CartState>((set, get) => ({
 
     try {
       set({ error: null });
-      await updateCartItemQuantity({
-        userId: user.id,
-        cartItemId,
-        productId,
-        selectedSize,
-        quantity,
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          cartItemId,
+          productId,
+          selectedSize,
+          quantity,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to update quantity' }));
+        throw new Error(errorData.error || 'Failed to update cart quantity');
+      }
+
       await get().loadCart();
     } catch (error) {
       console.error('Error updating cart quantity:', error);
-      set({ error: 'Failed to update cart quantity' });
+      const message = error instanceof Error ? error.message : 'Failed to update cart quantity';
+      set({ error: message });
       throw error;
     }
   },
 
   clearCart: async () => {
-    const user = useAuthStore.getState().user;
-
-    if (!user) {
-      const message = 'Please sign in to manage your cart.';
-      set({ error: message, isOpen: true });
-      throw new Error(message);
-    }
-
     try {
       set({ error: null });
-      await clearSupabaseCart(user.id);
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clear' }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to clear cart' }));
+        throw new Error(errorData.error || 'Failed to clear cart');
+      }
+
       set({ items: [], totals: EMPTY_TOTALS });
     } catch (error) {
       console.error('Error clearing cart:', error);
-      set({ error: 'Failed to clear cart' });
+      const message = error instanceof Error ? error.message : 'Failed to clear cart';
+      set({ error: message });
       throw error;
     }
   },
 
   openCart: () => {
-    const user = useAuthStore.getState().user;
-    if (!user) {
-      try {
-        const cached = typeof window !== 'undefined' ? window.localStorage.getItem(CART_CACHE_KEY) : null
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          const items = Array.isArray(parsed.items) ? parsed.items : []
-          const totals = parsed.totals && typeof parsed.totals === 'object' ? parsed.totals : EMPTY_TOTALS
-          set({ items, totals })
-        }
-      } catch {}
-      set({ isOpen: true, error: 'Please sign in to view your cart.' });
-    } else {
-      set({ isOpen: true });
-    }
+    try {
+      const cached = typeof window !== 'undefined' ? window.localStorage.getItem(CART_CACHE_KEY) : null
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        const items = Array.isArray(parsed.items) ? parsed.items : []
+        const totals = parsed.totals && typeof parsed.totals === 'object' ? parsed.totals : EMPTY_TOTALS
+        set({ items, totals })
+      }
+    } catch {}
+    set({ isOpen: true });
   },
 
   closeCart: () => set({ isOpen: false, error: null }),
@@ -217,47 +222,35 @@ export const useCartStore = create<CartState>((set, get) => ({
   getTotal: () => get().totals.total,
 
   loadCart: async () => {
-    const user = useAuthStore.getState().user;
-
-    if (!user) {
-      set({ items: [], totals: EMPTY_TOTALS, isLoading: false });
-      return;
-    }
-
     try {
       set({ isLoading: true, error: null });
+      const qs = get().couponCode ? `?coupon=${encodeURIComponent(get().couponCode as string)}` : '';
+      const response = await fetch(`/api/cart${qs}`, {
+        method: 'GET',
+      });
 
-      const [cartItems, totalsResponse] = await Promise.all([
-        getCartItems(user.id),
-        calculateCartTotal(user.id),
-      ]);
-      const productIds = Array.from(new Set(cartItems.map(item => item.product_id))).filter(Boolean);
-
-      let productMap = new Map<string, Product>();
-      if (productIds.length > 0) {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', productIds as string[]);
-
-        if (error) {
-          console.error('Error fetching products for cart:', error);
-        } else if (data) {
-          productMap = new Map(data.map(row => [row.id, mapProductRowToProduct(row)]));
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Not authenticated - clear cart
+          set({ items: [], totals: EMPTY_TOTALS, isLoading: false });
+          return;
         }
+        throw new Error('Failed to load cart');
       }
 
-      const mappedItems: CartItem[] = cartItems.map(ci => {
-        const baseProduct = ci.product_id ? productMap.get(ci.product_id) : undefined;
+      const data = await response.json();
+      const cartItems = data.items || [];
+      const totalsResponse = data.totals || data.summary || EMPTY_TOTALS;
+
+      const mappedItems: CartItem[] = cartItems.map((ci: any) => {
         const imagesFromCart = ci.product_images && ci.product_images.length > 0 ? ci.product_images : null;
 
-        const product: Product = baseProduct
-          ? {
-              ...baseProduct,
-              price: ci.product_price,
-              images: imagesFromCart ?? baseProduct.images,
-            }
-          : buildFallbackProduct(ci.product_id, ci.product_name, ci.product_price, imagesFromCart);
+        const product: Product = buildFallbackProduct(
+          ci.product_id,
+          ci.product_name,
+          ci.product_price,
+          imagesFromCart
+        );
 
         return {
           id: ci.id || `${ci.product_id}-${ci.selected_size ?? 'default'}`,
@@ -295,4 +288,12 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   setError: (error: string | null) => set({ error }),
   clearError: () => set({ error: null }),
+  applyCoupon: async (code: string) => {
+    set({ couponCode: code.trim() || undefined });
+    await get().loadCart();
+  },
+  clearCoupon: async () => {
+    set({ couponCode: undefined });
+    await get().loadCart();
+  },
 }));

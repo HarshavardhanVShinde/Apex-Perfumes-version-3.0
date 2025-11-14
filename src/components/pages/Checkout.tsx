@@ -6,13 +6,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, CreditCard, Lock, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cart';
-import { useAuthStore } from '@/stores/auth';
+import { useUser, useStackApp } from '@stackframe/stack';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { checkoutSchema, type CheckoutForm } from '@/lib/schema';
 import { formatPrice } from '@/lib/utils';
-import { supabase } from '@/lib/supabase/client';
-import { createOrder, updatePaymentStatus } from '@/lib/supabase/orders';
 import Image from 'next/image';
 
 // Helper to dynamically load Razorpay script
@@ -33,7 +31,15 @@ function loadRazorpay(): Promise<boolean> {
 export function Checkout() {
   const router = useRouter();
   const { items, getSubtotal, getTax, getTotal, clearCart, openCart } = useCartStore();
-  const { user } = useAuthStore();
+  const stackUser = useUser();
+  const stackApp = useStackApp();
+  
+  const user = stackUser ? {
+    id: stackUser.id,
+    email: stackUser.primaryEmail || '',
+    firstName: stackUser.displayName?.split(' ')[0] || '',
+    lastName: stackUser.displayName?.split(' ').slice(1).join(' ') || '',
+  } : null;
 
   const {
     register,
@@ -53,10 +59,9 @@ export function Checkout() {
 
   const onSubmit = async (data: CheckoutForm) => {
     try {
-      const authUser = useAuthStore.getState().user;
-      if (!authUser) {
+      if (!stackUser) {
         alert('Please log in to place an order.');
-        router.push('/auth/login');
+        router.push('/handler/sign-in');
         return;
       }
 
@@ -108,29 +113,7 @@ export function Checkout() {
         theme: { color: '#C9A227' },
         handler: async (response: any) => {
           try {
-            // Persist order after successful payment
-            const created = await createOrder({
-              userId: authUser.id,
-              cartItems: items.map(i => ({
-                product_id: i.product.id,
-                quantity: i.quantity,
-                price: i.product.price,
-              })),
-              totalAmount: total,
-              shippingAddress: {
-                fullName: `${data.firstName} ${data.lastName}`,
-                address: data.address,
-                city: data.city,
-                state: data.state,
-                zipCode: data.zipCode,
-                country: data.country,
-              },
-              paymentMethod: 'razorpay',
-            });
-
-            // Mark payment as paid
-            await updatePaymentStatus(created.id, 'paid');
-
+            await clearCart();
             alert('Payment successful! Your order has been placed.');
             router.push('/account');
           } catch (e) {

@@ -1,14 +1,6 @@
 import { create } from 'zustand';
 import { storage } from '@/lib/storage';
 import type { Product } from '@/types';
-import { 
-  addToWishlist, 
-  removeFromWishlist, 
-  getWishlistItems,
-  isInWishlist,
-  clearWishlist
-} from '@/lib/supabase/wishlist';
-import { useAuthStore } from '@/stores/auth';
 
 interface WishlistState {
   items: Product[];
@@ -28,46 +20,64 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
   isLoading: false,
 
   addItem: async (product: Product) => {
-    const user = useAuthStore.getState().user;
-    
-    if (user) {
-      const success = await addToWishlist(user.id, product.id);
-      if (success) {
-        await get().loadWishlist();
-        return true;
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', productId: product.id }),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated - store in localStorage
+        const currentItems = get().items;
+        const exists = currentItems.find(item => item.id === product.id);
+        
+        if (!exists) {
+          const newItems = [...currentItems, product];
+          set({ items: newItems });
+          storage.set(WISHLIST_KEY, newItems);
+          return true;
+        }
+        return false;
       }
-      return false;
-    } else {
-      // For non-authenticated users, store in localStorage
-      const currentItems = get().items;
-      const exists = currentItems.find(item => item.id === product.id);
-      
-      if (!exists) {
-        const newItems = [...currentItems, product];
-        set({ items: newItems });
-        storage.set(WISHLIST_KEY, newItems);
-        return true;
+
+      if (!response.ok) {
+        throw new Error('Failed to add to wishlist');
       }
+
+      await get().loadWishlist();
+      return true;
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
       return false;
     }
   },
 
   removeItem: async (productId: string) => {
-    const user = useAuthStore.getState().user;
-    
-    if (user) {
-      const success = await removeFromWishlist(user.id, productId);
-      if (success) {
-        await get().loadWishlist();
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove', productId }),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated - remove from localStorage
+        const newItems = get().items.filter(item => item.id !== productId);
+        set({ items: newItems });
+        storage.set(WISHLIST_KEY, newItems);
         return true;
       }
-      return false;
-    } else {
-      // For non-authenticated users, remove from localStorage
-      const newItems = get().items.filter(item => item.id !== productId);
-      set({ items: newItems });
-      storage.set(WISHLIST_KEY, newItems);
+
+      if (!response.ok) {
+        throw new Error('Failed to remove from wishlist');
+      }
+
+      await get().loadWishlist();
       return true;
+    } catch (error) {
+      console.error('Error removing from wishlist:', error);
+      return false;
     }
   },
 
@@ -76,69 +86,96 @@ export const useWishlistStore = create<WishlistState>((set, get) => ({
   },
 
   clearWishlist: async () => {
-    const user = useAuthStore.getState().user;
-    
-    if (user) {
-      const success = await clearWishlist(user.id);
-      if (success) {
+    try {
+      const response = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clear' }),
+      });
+
+      if (response.status === 401) {
+        // Not authenticated - clear localStorage
         set({ items: [] });
+        storage.remove(WISHLIST_KEY);
         return true;
       }
-      return false;
-    } else {
+
+      if (!response.ok) {
+        throw new Error('Failed to clear wishlist');
+      }
+
       set({ items: [] });
-      storage.remove(WISHLIST_KEY);
       return true;
+    } catch (error) {
+      console.error('Error clearing wishlist:', error);
+      return false;
     }
   },
 
   loadWishlist: async () => {
-    const user = useAuthStore.getState().user;
     set({ isLoading: true });
     
     try {
-      if (user) {
-        const wishlistItems = await getWishlistItems(user.id);
-        const products: Product[] = wishlistItems.map(item => ({
-          id: item.product_id,
-          name: item.product_name,
-          brand: item.product_brand,
-          price: item.product_price,
-          originalPrice: undefined,
-          images: item.product_images,
-          category: item.product_category as Product['category'],
-          type: item.product_type as Product['type'],
-          notes: { top: [], heart: [], base: [] },
-          longevity: 0,
-          sillage: 'moderate' as const,
-          rating: item.product_rating,
-          stock: item.product_stock,
-          description: item.product_description,
-          isNew: item.is_new,
-          isBestSeller: item.is_best_seller,
-          isOnSale: item.is_on_sale,
-        }));
-        
-        set({ items: products });
-        
-        // Sync local wishlist if exists
-        const localWishlist = storage.get<Product[]>(WISHLIST_KEY) || [];
-        if (localWishlist.length > 0) {
-          // Add local items to server wishlist
-          for (const product of localWishlist) {
-            await addToWishlist(user.id, product.id);
-          }
-          storage.remove(WISHLIST_KEY);
-          // Reload to get updated list
-          await get().loadWishlist();
-        }
-      } else {
-        // Load from localStorage for non-authenticated users
+      const response = await fetch('/api/wishlist', {
+        method: 'GET',
+      });
+
+      if (response.status === 401) {
+        // Not authenticated - load from localStorage
         const savedWishlist = storage.get<Product[]>(WISHLIST_KEY) || [];
         set({ items: savedWishlist });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to load wishlist');
+      }
+
+      const data = await response.json();
+      const wishlistItems = data.items || [];
+
+      const products: Product[] = wishlistItems.map((item: any) => ({
+        id: item.product_id,
+        name: item.product_name,
+        brand: item.product_brand,
+        price: item.product_price,
+        originalPrice: undefined,
+        images: item.product_images,
+        category: item.product_category as Product['category'],
+        type: item.product_type as Product['type'],
+        notes: { top: [], heart: [], base: [] },
+        longevity: 0,
+        sillage: 'moderate' as const,
+        rating: item.product_rating,
+        stock: item.product_stock,
+        description: item.product_description,
+        isNew: item.is_new,
+        isBestSeller: item.is_best_seller,
+        isOnSale: item.is_on_sale,
+      }));
+      
+      set({ items: products });
+      
+      // Sync local wishlist if exists
+      const localWishlist = storage.get<Product[]>(WISHLIST_KEY) || [];
+      if (localWishlist.length > 0) {
+        // Add local items to server wishlist
+        for (const product of localWishlist) {
+          await fetch('/api/wishlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'add', productId: product.id }),
+          });
+        }
+        storage.remove(WISHLIST_KEY);
+        // Reload to get updated list
+        await get().loadWishlist();
       }
     } catch (error) {
       console.error('Error loading wishlist:', error);
+      // Fallback to localStorage on error
+      const savedWishlist = storage.get<Product[]>(WISHLIST_KEY) || [];
+      set({ items: savedWishlist });
     } finally {
       set({ isLoading: false });
     }

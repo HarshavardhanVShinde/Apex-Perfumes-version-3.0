@@ -5,8 +5,22 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.pexels.com' },
       { protocol: 'https', hostname: 'via.placeholder.com' },
-      { protocol: 'https', hostname: '**.supabase.co' },
+      // Temporary: allow existing seeded Supabase image URLs
+      { protocol: 'https', hostname: 'wnaxppdlvfcfeluxlvxn.supabase.co' }
     ],
+  },
+  webpack: (config, { isServer }) => {
+    // Suppress specific warnings from Stack Auth UI library
+    config.ignoreWarnings = [
+      { module: /node_modules\/@stackframe\/stack/ },
+      { module: /node_modules\/@stackframe\/stack-ui/ },
+    ];
+    return config;
+  },
+  // Suppress specific build warnings
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
 };
 

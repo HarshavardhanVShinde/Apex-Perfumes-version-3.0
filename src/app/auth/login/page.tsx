@@ -1,6 +1,5 @@
-import React from 'react';
-import { Login } from '@/components/pages/auth/Login';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return <Login />;
+  redirect('/handler/sign-in');
 }

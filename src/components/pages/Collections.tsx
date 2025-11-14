@@ -8,7 +8,6 @@ import { fetchProducts } from '@/lib/api/products';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
-// Supabase-backed products state
 const initialProducts: Product[] = [];
 
 // Category mapping
@@ -26,6 +25,8 @@ export function Collections() {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Get category from URL parameters
   const rawCategory = (params.category as string)?.toLowerCase() || 'men';
@@ -50,13 +51,14 @@ export function Collections() {
     setErrorMessage(null);
     const fetchData = async () => {
       try {
-        const resp = await fetchProducts({ category: activeCategory, page: 1, limit: 100 });
+        const resp = await fetchProducts({ category: activeCategory, page: 1, limit: 24 });
         const mapped = resp.products ?? [];
         if (!isMounted) {
           return;
         }
-
         setProducts(mapped);
+        setCurrentPage(1);
+        setTotalPages(resp.totalPages || 1);
         setErrorMessage(null);
       } catch (e) {
         console.error('Failed to load products', e);
@@ -79,6 +81,22 @@ export function Collections() {
       setReloadToken(prev => prev + 1);
     }
   }, [loading]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (loading || currentPage >= totalPages) return;
+    try {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      const resp = await fetchProducts({ category: activeCategory, page: nextPage, limit: 24 });
+      setProducts(prev => [...prev, ...(resp.products ?? [])]);
+      setCurrentPage(nextPage);
+      setTotalPages(resp.totalPages || totalPages);
+    } catch (e) {
+      console.error('Failed to load more products', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeCategory, currentPage, totalPages, loading]);
 
   return (
     <div className="min-h-screen">
@@ -201,6 +219,19 @@ export function Collections() {
               </p>
               <Button className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 hover:from-purple-700 hover:via-purple-800 hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" asChild>
                 <Link href="/">Browse All Collections</Link>
+              </Button>
+            </div>
+          )}
+
+          {/* Load more */}
+          {products.length > 0 && currentPage < totalPages && (
+            <div className="mt-8 flex justify-center">
+              <Button
+                onClick={handleLoadMore}
+                disabled={loading}
+                className="bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {loading ? 'Loading...' : 'Load More'}
               </Button>
             </div>
           )}

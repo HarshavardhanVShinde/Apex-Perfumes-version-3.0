@@ -1,48 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/client';
-import { getProductWithFallback, enhanceCartItemsWithProductData } from '@/lib/supabase/products-sync';
+import { stackServerApp } from '@/stack/server';
+import { getCartItems, addToCart, updateCartItemQuantity, removeFromCart, clearCart, ensureUserProfile } from '@/lib/neon/cart';
+import { getProduct } from '@/lib/neon/products';
 
-// Helper function to get price by size
+// Helper function to get price by size (fallbacks)
 function getSizePrice(selectedSize: string): number {
   const sizePrices: Record<string, number> = {
     '20ml': 349,
-    '50ml': 599,
-    '100ml': 799
+    '50ml': 499,
+    '100ml': 699,
   };
   return sizePrices[selectedSize] || sizePrices['100ml'];
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Debug: Check authentication
-    console.log('🔍 Cart API: Starting authentication check...');
-    
-    // Get session first
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+    const user = await stackServerApp.getUser({ tokenStore: request });
 
-    console.log('🔍 Cart API: Session result:', {
-      hasSession: !!session,
-      sessionError: sessionError?.message,
-      userId: session?.user?.id
-    });
-
-    if (sessionError) {
-      console.error('❌ Cart API: Session error:', sessionError);
-      return NextResponse.json(
-        {
-          error: 'Session error',
-          details: sessionError.message,
-          authenticated: false
-        },
-        { status: 401 }
-      );
-    }
-
-    if (!session?.user) {
-      console.log('❌ Cart API: No session found');
+    if (!user) {
       return NextResponse.json(
         {
           error: 'User not authenticated',
@@ -52,70 +27,59 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-    
-    console.log('✅ Cart API: User authenticated:', session.user.id);
 
-    // Get cart items directly from the cart_items table
-    const { data: cartItems, error: fetchError } = await supabase
-      .from('cart_items')
-      .select(`
-        id,
-        user_id,
-        product_id,
-        quantity,
-        selected_size
-      `)
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
-
-    if (fetchError) {
-      console.error('Error fetching cart items:', fetchError);
-      return NextResponse.json(
-        { error: 'Failed to fetch cart items' },
-        { status: 500 }
-      );
-    }
-
-    // Enhance cart items with complete product data including images
-    const enhancedItems = await enhanceCartItemsWithProductData(cartItems || []);
-
-    // Transform the response and calculate prices
-    const transformedItems = enhancedItems.map((item: any) => {
-      const selectedSize = item.selected_size || '100ml';
-      const price = getSizePrice(selectedSize);
-      
-      return {
-        id: item.id,
-        user_id: item.user_id,
-        product_id: item.product_id,
-        product_name: item.product_name,
-        product_price: price,
-        quantity: item.quantity,
-        selected_size: selectedSize,
-        product_images: item.product_images || [],
-        total_price: price * item.quantity,
-      };
+    // Ensure user profile exists
+    await ensureUserProfile(user.id, {
+      displayName: user.displayName || '',
+      email: user.primaryEmail || '',
     });
 
-    // Calculate cart totals with promotion
+    // Get cart items from Neon
+    const cartItems = await getCartItems(user.id);
+
+    // Transform the response
+    const transformedItems = cartItems.map((item) => ({
+      id: item.id,
+      user_id: item.user_id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_price: item.product_price,
+      quantity: item.quantity,
+      selected_size: item.selected_size,
+      product_images: item.product_images,
+      total_price: item.total_price,
+    }));
+
+    // Calculate cart totals with promotions + optional coupon
     const subtotal = transformedItems.reduce((sum, item) => sum + item.total_price, 0);
-    
-    // Count 100ml bottles for promotion
+
+    // Promotion: Buy 2 Get 1 Free (100ml)
     const count100ml = transformedItems
       .filter(item => item.selected_size === '100ml')
       .reduce((sum, item) => sum + item.quantity, 0);
-    
     const freeBottles = Math.floor(count100ml / 2);
-    const discount = freeBottles * 799; // 100ml price is 799
-    const total = subtotal - discount;
+    const promoDiscount = freeBottles * 699; // 100ml price fallback is 699
+
+    // Coupon handling (AURA10: 10% OFF on totals >= 1199)
+    const coupon = request.nextUrl.searchParams.get('coupon')?.toUpperCase() || '';
+    const threshold = 1199;
+    const beforeCoupon = Math.max(0, subtotal - promoDiscount);
+    const couponDiscount = coupon === 'AURA10' && beforeCoupon >= threshold
+      ? Math.round(beforeCoupon * 0.10)
+      : 0;
+    const total = Math.max(0, beforeCoupon - couponDiscount);
+
+    const promoParts: string[] = [];
+    if (promoDiscount > 0) promoParts.push('Buy 2 Get 1 Free (100ml)');
+    if (couponDiscount > 0) promoParts.push('AURA10: 10% OFF');
 
     return NextResponse.json({
       items: transformedItems,
       summary: {
         subtotal,
-        discount,
+        discount: promoDiscount + couponDiscount,
         total,
-        promotion_text: discount > 0 ? 'Buy 2 Get 1 Free on 100ml bottles' : null,
+        promotion_text: promoParts.length ? promoParts.join(' + ') : null,
       },
     });
   } catch (error) {
@@ -129,18 +93,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get session first for authentication
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+    const user = await stackServerApp.getUser({ tokenStore: request });
 
-    if (sessionError || !session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    // Ensure user profile exists
+    await ensureUserProfile(user.id, {
+      displayName: user.displayName || '',
+      email: user.primaryEmail || '',
+    });
 
     const body = await request.json();
     const { action, productId, quantity, selectedSize = '100ml' } = body;
@@ -152,8 +118,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let error;
-
     switch (action) {
       case 'add':
         if (!quantity || quantity < 1) {
@@ -162,44 +126,23 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        ({ error } = await supabase.rpc('upsert_cart_item_with_size', {
-          p_user_id: session.user.id,
-          p_product_id: productId,
-          p_quantity: quantity,
-          p_selected_size: selectedSize,
-        }));
+        await addToCart(user.id, productId, quantity, selectedSize);
         break;
 
       case 'update':
         if (quantity <= 0) {
-          // Remove item if quantity is 0 or negative
-          ({ error } = await supabase.rpc('remove_cart_item_with_size', {
-            p_user_id: session.user.id,
-            p_product_id: productId,
-            p_selected_size: selectedSize,
-          }));
+          await removeFromCart({ userId: user.id, productId, selectedSize });
         } else {
-          ({ error } = await supabase.rpc('set_cart_item_quantity_with_size', {
-            p_user_id: session.user.id,
-            p_product_id: productId,
-            p_quantity: quantity,
-            p_selected_size: selectedSize,
-          }));
+          await updateCartItemQuantity({ userId: user.id, productId, quantity, selectedSize });
         }
         break;
 
       case 'remove':
-        ({ error } = await supabase.rpc('remove_cart_item_with_size', {
-          p_user_id: session.user.id,
-          p_product_id: productId,
-          p_selected_size: selectedSize,
-        }));
+        await removeFromCart({ userId: user.id, productId, selectedSize });
         break;
 
       case 'clear':
-        ({ error } = await supabase.rpc('clear_cart', {
-          p_user_id: session.user.id,
-        }));
+        await clearCart(user.id);
         break;
 
       default:
@@ -209,75 +152,51 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    if (error) {
-      console.error('Error updating cart:', error);
-      return NextResponse.json(
-        { error: 'Failed to update cart' },
-        { status: 500 }
-      );
-    }
-
     // Get updated cart items
-    const { data: cartItems, error: fetchError } = await supabase
-      .from('cart_items')
-      .select(`
-        id,
-        user_id,
-        product_id,
-        quantity,
-        selected_size
-      `)
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
+    const cartItems = await getCartItems(user.id);
 
-    if (fetchError) {
-      console.error('Error fetching updated cart items:', fetchError);
-      return NextResponse.json(
-        { error: 'Failed to fetch updated cart items' },
-        { status: 500 }
-      );
-    }
+    // Transform the response
+    const transformedItems = cartItems.map((item) => ({
+      id: item.id,
+      user_id: item.user_id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_price: item.product_price,
+      quantity: item.quantity,
+      selected_size: item.selected_size,
+      product_images: item.product_images,
+      total_price: item.total_price,
+    }));
 
-    // Enhance cart items with complete product data including images
-    const enhancedItems = await enhanceCartItemsWithProductData(cartItems || []);
-
-    // Transform the response and calculate prices
-    const transformedItems = enhancedItems.map((item: any) => {
-      const selectedSize = item.selected_size || '100ml';
-      const price = getSizePrice(selectedSize);
-      
-      return {
-        id: item.id,
-        user_id: item.user_id,
-        product_id: item.product_id,
-        product_name: item.product_name,
-        product_price: price,
-        quantity: item.quantity,
-        selected_size: selectedSize,
-        product_images: item.product_images || [],
-        total_price: price * item.quantity,
-      };
-    });
-
-    // Calculate updated totals
+    // Calculate updated totals (promotions + coupon)
     const subtotal = transformedItems.reduce((sum, item) => sum + item.total_price, 0);
-    
-    // Count 100ml bottles for promotion
+
     const count100ml = transformedItems
       .filter(item => item.selected_size === '100ml')
       .reduce((sum, item) => sum + item.quantity, 0);
-    
     const freeBottles = Math.floor(count100ml / 2);
-    const discount = freeBottles * 799; // 100ml price is 799
-    const total = subtotal - discount;
+    const promoDiscount = freeBottles * 699; // 100ml price fallback is 699
+
+    const url = new URL(request.url);
+    const coupon = url.searchParams.get('coupon')?.toUpperCase() || '';
+    const threshold = 1199;
+    const beforeCoupon = Math.max(0, subtotal - promoDiscount);
+    const couponDiscount = coupon === 'AURA10' && beforeCoupon >= threshold
+      ? Math.round(beforeCoupon * 0.10)
+      : 0;
+    const total = Math.max(0, beforeCoupon - couponDiscount);
+
+    const promoParts: string[] = [];
+    if (promoDiscount > 0) promoParts.push('Buy 2 Get 1 Free (100ml)');
+    if (couponDiscount > 0) promoParts.push('AURA10: 10% OFF');
 
     return NextResponse.json({
       items: transformedItems,
       summary: {
         subtotal,
-        discount,
+        discount: promoDiscount + couponDiscount,
         total,
-        promotion_text: discount > 0 ? 'Buy 2 Get 1 Free on 100ml bottles' : null,
+        promotion_text: promoParts.length ? promoParts.join(' + ') : null,
       },
     });
   } catch (error) {

@@ -3,10 +3,9 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Package, Heart, Settings, LogOut } from 'lucide-react';
-import { useAuthStore } from '@/stores/auth';
+import { useUser, useStackApp } from '@stackframe/stack';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import { supabase } from '@/lib/supabase/client';
 
 type OrderItemDisplay = {
   name: string;
@@ -31,17 +30,25 @@ const statusColors = {
 };
 
 export function Account() {
-  const { user, logout } = useAuthStore();
+  const stackUser = useUser();
+  const stackApp = useStackApp();
   const router = useRouter();
   const [orders, setOrders] = React.useState<OrderDisplay[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
+  
+  const user = stackUser ? {
+    id: stackUser.id,
+    email: stackUser.primaryEmail || '',
+    firstName: stackUser.displayName?.split(' ')[0] || '',
+    lastName: stackUser.displayName?.split(' ').slice(1).join(' ') || '',
+  } : null;
 
   React.useEffect(() => {
-    if (!user) {
-      router.replace('/auth/login');
+    if (!stackUser) {
+      router.replace('/handler/sign-in');
     }
-  }, [user, router]);
+  }, [stackUser, router]);
 
   React.useEffect(() => {
     if (!user) {
@@ -51,45 +58,23 @@ export function Account() {
       try {
         setLoading(true);
         setError(null);
-        const { data, error } = await supabase
-          .from('orders')
-          .select(`
-            id,
-            created_at,
-            status,
-            total_amount,
-            order_items (
-              quantity,
-              price,
-              product:products (
-                name,
-                images,
-                brand
-              )
-            )
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        const mapped: OrderDisplay[] = (data || []).map((o: any) => ({
+        const response = await fetch('/api/orders?page=1&limit=10', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed to fetch orders');
+        const data = await response.json();
+        const mapped: OrderDisplay[] = (data.orders || []).map((o: any) => ({
           id: o.id,
           created_at: o.created_at,
           status: o.status,
           total: o.total_amount,
           items: (o.order_items || []).map((i: any) => ({
             name: i.product?.name ?? 'Product',
-            image:
-              (Array.isArray(i.product?.images) && i.product?.images[0])
-                ? i.product.images[0]
-                : 'https://via.placeholder.com/80x80.png?text=Image',
+            image: (Array.isArray(i.product?.images) && i.product?.images[0]) ? i.product.images[0] : '/perfume-logo.png',
             quantity: i.quantity,
             price: i.price,
           })),
         }));
-
         setOrders(mapped);
+
       } catch (e: any) {
         setError(e?.message ?? 'Failed to load orders');
       } finally {
@@ -104,8 +89,9 @@ export function Account() {
     return null;
   }
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await stackApp.signOut();
+    router.push('/');
   };
 
   return (
@@ -177,6 +163,50 @@ export function Account() {
             </div>
           </div>
 
+          {/* Orders section */}
+          <div className="lg:col-span-3">
+            <section id="orders" className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Order History</h2>
+                  {loading ? (
+                    <p className="text-slate-600 dark:text-gray-400">Loading orders...</p>
+                  ) : error ? (
+                    <p className="text-red-600 dark:text-red-400">{error}</p>
+                  ) : orders.length === 0 ? (
+                    <p className="text-slate-600 dark:text-gray-400">No orders yet.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {orders.map(order => (
+                        <div key={order.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-slate-600 dark:text-gray-400">Order ID</p>
+                              <p className="font-semibold text-slate-900 dark:text-white">{order.id}</p>
+                            </div>
+                            <div>
+                              <span className={`px-2 py-1 rounded text-xs ${statusColors[order.status as keyof typeof statusColors] || 'bg-slate-100 text-slate-800'}`}>{order.status}</span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-slate-600 dark:text-gray-400">Total</p>
+                              <p className="font-semibold text-slate-900 dark:text-white">{formatPrice(order.total)}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex gap-3 overflow-x-auto">
+                            {order.items.map((it, idx) => (
+                              <div key={idx} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-2 min-w-[220px]">
+                                <img src={it.image} alt={it.name} className="h-10 w-10 object-cover rounded" />
+                                <div>
+                                  <p className="text-sm font-medium text-slate-900 dark:text-white">{it.name}</p>
+                                  <p className="text-xs text-slate-600 dark:text-gray-400">{it.quantity} × {formatPrice(it.price)}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+            </section>
+          </div>
         </div>
       </div>
     </div>

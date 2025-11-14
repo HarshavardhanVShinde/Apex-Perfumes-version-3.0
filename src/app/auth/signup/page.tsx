@@ -1,6 +1,5 @@
-import React from 'react';
-import { Signup } from '@/components/pages/auth/Signup';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return <Signup />;
+  redirect('/handler/sign-up');
 }

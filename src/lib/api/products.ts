@@ -1,5 +1,4 @@
 import type { Product } from '@/types'
-import { mapProductRowToProduct } from '@/lib/supabase/mappers'
 
 export interface ListParams {
   category?: string
@@ -31,7 +30,7 @@ export async function fetchProducts(params: ListParams = {}) {
   if (!res.ok) throw new Error(`Failed to load products: ${res.status}`)
   const json = await res.json()
   return {
-    products: (json.products ?? []).map(mapProductRowToProduct) as Product[],
+    products: json.products as Product[],
     total: json.total as number,
     page: json.page as number,
     limit: json.limit as number,
@@ -44,9 +43,9 @@ export async function fetchFeatured() {
   if (!res.ok) throw new Error(`Failed to load featured: ${res.status}`)
   const json = await res.json()
   return {
-    newProducts: (json.newProducts ?? []).map(mapProductRowToProduct) as Product[],
-    bestSellers: (json.bestSellers ?? []).map(mapProductRowToProduct) as Product[],
-    onSale: (json.onSale ?? []).map(mapProductRowToProduct) as Product[],
+    newProducts: json.newProducts as Product[],
+    bestSellers: json.bestSellers as Product[],
+    onSale: json.onSale as Product[],
   }
 }
 
@@ -55,5 +54,5 @@ export async function fetchProduct(id: string) {
   if (res.status === 404) return null
   if (!res.ok) throw new Error(`Failed to load product: ${res.status}`)
   const json = await res.json()
-  return mapProductRowToProduct(json)
+  return json as Product
 }
