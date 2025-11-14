@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -10,6 +12,10 @@ const nextConfig = {
     ],
   },
   webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      '@': path.resolve(process.cwd(), 'src'),
+    };
     // Suppress specific warnings from Stack Auth UI library
     config.ignoreWarnings = [
       { module: /node_modules\/@stackframe\/stack/ },
