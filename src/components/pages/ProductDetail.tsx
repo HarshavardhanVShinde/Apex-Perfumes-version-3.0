@@ -108,7 +108,7 @@ export function ProductDetail({ initialProduct = null, initialRelated = [], pref
     if (product) {
       try {
         await addItem(product, quantity, selectedSize);
-        console.log('✅ Added to cart:', product.name);
+        // console.log('✅ Added to cart:', product.name);
       } catch (error) {
         console.error('❌ Error adding to cart:', error);
         // Could add a toast notification here for user feedback

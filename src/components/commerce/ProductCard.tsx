@@ -34,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     try {
       await addItem(product);
-      console.log('✅ Added to cart:', product.name);
+      // console.log('✅ Added to cart:', product.name);
     } catch (error) {
       console.error('❌ Error adding to cart:', error);
       // Could add a toast notification here for user feedback

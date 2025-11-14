@@ -23,7 +23,7 @@ export function Contact() {
     try {
       // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Contact form submitted:', data);
+      // console.log('Contact form submitted:', data);
       setIsSubmitted(true);
       reset();
       setTimeout(() => setIsSubmitted(false), 5000);

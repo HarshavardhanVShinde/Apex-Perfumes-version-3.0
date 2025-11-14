@@ -19,7 +19,7 @@ const CATEGORY_TITLES: Record<string, string> = {
 const VALID_CATEGORIES = ['men', 'women'];
 
 export function Collections() {
-  const params = useParams();
+  const params = useParams<{ category?: string }>() ?? {};
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,7 +29,7 @@ export function Collections() {
   const [totalPages, setTotalPages] = useState(1);
 
   // Get category from URL parameters
-  const rawCategory = (params.category as string)?.toLowerCase() || 'men';
+  const rawCategory = (params?.category ?? 'men').toLowerCase();
   const activeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'men';
   const categoryTitle = CATEGORY_TITLES[activeCategory] || "Fragrances";
   const categoryDescription = activeCategory === 'men' 
