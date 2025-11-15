@@ -62,7 +62,7 @@ export async function getCartItems(userId: string): Promise<CartItemWithProduct[
     user_id: item.user_id,
     product_id: item.product_id,
     quantity: item.quantity,
-    selected_size: item.selected_size || '100ml',
+    selected_size: item.selected_size || '20ml',
     product_name: item.product_name,
     product_brand: item.product_brand,
     product_price: parseFloat(item.product_price),
@@ -80,7 +80,7 @@ export async function addToCart(
   userId: string,
   productId: string,
   quantity: number = 1,
-  selectedSize: string = '100ml'
+  selectedSize: string = '20ml'
 ): Promise<boolean> {
   try {
     // Check if item already exists

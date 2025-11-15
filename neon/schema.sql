@@ -86,13 +86,13 @@ CREATE TABLE IF NOT EXISTS public.cart_items (
   user_id text NOT NULL REFERENCES public.profiles (id) ON DELETE CASCADE,
   product_id uuid NOT NULL REFERENCES public.products (id) ON DELETE CASCADE,
   quantity integer NOT NULL CHECK (quantity > 0),
-  selected_size text DEFAULT '100ml',
+  selected_size text DEFAULT '20ml',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS cart_items_unique_user_product_size
-  ON public.cart_items (user_id, product_id, COALESCE(selected_size, '100ml'));
+  ON public.cart_items (user_id, product_id, COALESCE(selected_size, '20ml'));
 CREATE INDEX IF NOT EXISTS cart_items_user_id_idx ON public.cart_items (user_id);
 
 -- Wishlist items
@@ -121,9 +121,9 @@ SELECT
   p.images      AS product_images,
   p.category    AS product_category,
   p.stock       AS product_stock,
-  COALESCE((p.sizes -> COALESCE(ci.selected_size, '100ml') ->> 'price')::numeric, p.price) AS product_price,
-  COALESCE((p.sizes -> COALESCE(ci.selected_size, '100ml') ->> 'price')::numeric, p.price) AS size_price,
-  ci.quantity * COALESCE((p.sizes -> COALESCE(ci.selected_size, '100ml') ->> 'price')::numeric, p.price) AS total_price,
+  COALESCE((p.sizes -> COALESCE(ci.selected_size, '20ml') ->> 'price')::numeric, p.price) AS product_price,
+  COALESCE((p.sizes -> COALESCE(ci.selected_size, '20ml') ->> 'price')::numeric, p.price) AS size_price,
+  ci.quantity * COALESCE((p.sizes -> COALESCE(ci.selected_size, '20ml') ->> 'price')::numeric, p.price) AS total_price,
   ci.created_at,
   ci.updated_at
 FROM public.cart_items ci
@@ -172,7 +172,7 @@ CREATE OR REPLACE FUNCTION public.set_cart_item_quantity(
   p_user_id text,
   p_product_id uuid,
   p_quantity integer,
-  p_selected_size text DEFAULT '100ml'
+  p_selected_size text DEFAULT '20ml'
 )
 RETURNS void
 LANGUAGE sql
@@ -182,14 +182,14 @@ AS $$
       updated_at = now()
   WHERE user_id = p_user_id
     AND product_id = p_product_id
-    AND COALESCE(selected_size, '100ml') = COALESCE(p_selected_size, '100ml');
+    AND COALESCE(selected_size, '20ml') = COALESCE(p_selected_size, '20ml');
 $$;
 
 -- Helper function: Remove cart item
 CREATE OR REPLACE FUNCTION public.remove_cart_item(
   p_user_id text,
   p_product_id uuid,
-  p_selected_size text DEFAULT '100ml'
+  p_selected_size text DEFAULT '20ml'
 )
 RETURNS void
 LANGUAGE sql
@@ -197,7 +197,7 @@ AS $$
   DELETE FROM public.cart_items
   WHERE user_id = p_user_id
     AND product_id = p_product_id
-    AND COALESCE(selected_size, '100ml') = COALESCE(p_selected_size, '100ml');
+    AND COALESCE(selected_size, '20ml') = COALESCE(p_selected_size, '20ml');
 $$;
 
 -- Helper function: Clear cart

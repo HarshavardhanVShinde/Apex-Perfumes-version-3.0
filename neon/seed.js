@@ -39,7 +39,7 @@ const products = [
     is_new: false,
     is_best_seller: true,
     is_on_sale: false,
-    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 599 }, '100ml': { label: '100 ml', price: 799 } }
+    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 499 }, '100ml': { label: '100 ml', price: 699 } }
   },
   {
     // Let database generate UUID
@@ -58,7 +58,7 @@ const products = [
     is_new: false,
     is_best_seller: true,
     is_on_sale: false,
-    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 599 }, '100ml': { label: '100 ml', price: 799 } }
+    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 499 }, '100ml': { label: '100 ml', price: 699 } }
   },
   {
     // Let database generate UUID
@@ -77,7 +77,7 @@ const products = [
     is_new: true,
     is_best_seller: true,
     is_on_sale: false,
-    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 599 }, '100ml': { label: '100 ml', price: 799 } }
+    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 499 }, '100ml': { label: '100 ml', price: 699 } }
   },
   {
     // Let database generate UUID
@@ -96,7 +96,7 @@ const products = [
     is_new: false,
     is_best_seller: false,
     is_on_sale: false,
-    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 599 }, '100ml': { label: '100 ml', price: 799 } }
+    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 499 }, '100ml': { label: '100 ml', price: 699 } }
   },
   {
     // Let database generate UUID
@@ -115,7 +115,7 @@ const products = [
     is_new: false,
     is_best_seller: true,
     is_on_sale: false,
-    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 599 }, '100ml': { label: '100 ml', price: 799 } }
+    sizes: { '20ml': { label: '20 ml', price: 349 }, '50ml': { label: '50 ml', price: 499 }, '100ml': { label: '100 ml', price: 699 } }
   }
 ];
 

@@ -1,6 +1,8 @@
 import { Home } from '@/components/pages/Home';
 import { getFeaturedProducts, getProductsByCategory } from '@/lib/neon/products';
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export default async function Page() {
   const [featured, men, women] = await Promise.all([
     getFeaturedProducts(),

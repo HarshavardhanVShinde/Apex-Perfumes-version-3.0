@@ -3,7 +3,6 @@
 
 -- Insert products
 INSERT INTO public.products (
-  id,
   name,
   brand,
   price,
@@ -25,7 +24,6 @@ INSERT INTO public.products (
   updated_at
 ) VALUES
 (
-  'inspired-1',
   'Cool Water',
   'Inspired',
   1199.00,
@@ -42,12 +40,11 @@ INSERT INTO public.products (
   false,
   true,
   false,
-  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 599}, "100ml": {"label": "100 ml", "price": 799}}'::jsonb,
+  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 499}, "100ml": {"label": "100 ml", "price": 699}}'::jsonb,
   '2025-11-11 10:15:21.080118+00',
   '2025-11-13 06:33:15.195882+00'
 ),
 (
-  'inspired-2',
   'Most Wanted',
   'Inspired',
   1199.00,
@@ -64,12 +61,11 @@ INSERT INTO public.products (
   false,
   true,
   false,
-  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 599}, "100ml": {"label": "100 ml", "price": 799}}'::jsonb,
+  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 499}, "100ml": {"label": "100 ml", "price": 699}}'::jsonb,
   '2025-11-11 10:15:21.080118+00',
   '2025-11-13 06:33:15.195882+00'
 ),
 (
-  'inspired-3',
   'Bleu De Chanel',
   'Inspired',
   1199.00,
@@ -86,12 +82,11 @@ INSERT INTO public.products (
   true,
   true,
   false,
-  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 599}, "100ml": {"label": "100 ml", "price": 799}}'::jsonb,
+  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 499}, "100ml": {"label": "100 ml", "price": 699}}'::jsonb,
   '2025-11-11 10:15:21.080118+00',
   '2025-11-13 06:33:15.195882+00'
 ),
 (
-  'inspired-4',
   'Dior Sauvage',
   'Inspired',
   1199.00,
@@ -108,12 +103,11 @@ INSERT INTO public.products (
   false,
   false,
   false,
-  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 599}, "100ml": {"label": "100 ml", "price": 799}}'::jsonb,
+  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 499}, "100ml": {"label": "100 ml", "price": 699}}'::jsonb,
   '2025-11-11 10:15:21.080118+00',
   '2025-11-13 06:33:15.195882+00'
 ),
 (
-  'inspired-5',
   'Gucci Flora',
   'Inspired',
   1199.00,
@@ -130,26 +124,8 @@ INSERT INTO public.products (
   false,
   true,
   false,
-  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 599}, "100ml": {"label": "100 ml", "price": 799}}'::jsonb,
+  '{"20ml": {"label": "20 ml", "price": 349}, "50ml": {"label": "50 ml", "price": 499}, "100ml": {"label": "100 ml", "price": 699}}'::jsonb,
   '2025-11-11 10:15:21.080118+00',
   '2025-11-13 06:33:15.195882+00'
 )
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  brand = EXCLUDED.brand,
-  price = EXCLUDED.price,
-  original_price = EXCLUDED.original_price,
-  images = EXCLUDED.images,
-  category = EXCLUDED.category,
-  type = EXCLUDED.type,
-  notes = EXCLUDED.notes,
-  longevity = EXCLUDED.longevity,
-  sillage = EXCLUDED.sillage,
-  rating = EXCLUDED.rating,
-  stock = EXCLUDED.stock,
-  description = EXCLUDED.description,
-  is_new = EXCLUDED.is_new,
-  is_best_seller = EXCLUDED.is_best_seller,
-  is_on_sale = EXCLUDED.is_on_sale,
-  sizes = EXCLUDED.sizes,
-  updated_at = now();
+;

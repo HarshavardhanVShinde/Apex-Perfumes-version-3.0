@@ -18,6 +18,7 @@ export const signupSchema = z.object({
 
 export const checkoutSchema = z.object({
   email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone is required'),
   firstName: z.string().min(2, 'First name is required'),
   lastName: z.string().min(2, 'Last name is required'),
   address: z.string().min(5, 'Address is required'),

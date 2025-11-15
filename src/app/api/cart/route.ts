@@ -50,34 +50,28 @@ export async function GET(request: NextRequest) {
       total_price: item.total_price,
     }));
 
-    // Calculate cart totals with promotions + optional coupon
+    // Calculate cart totals with coupon
     const subtotal = transformedItems.reduce((sum, item) => sum + item.total_price, 0);
 
-    // Promotion: Buy 2 Get 1 Free (100ml)
-    const count100ml = transformedItems
-      .filter(item => item.selected_size === '100ml')
-      .reduce((sum, item) => sum + item.quantity, 0);
-    const freeBottles = Math.floor(count100ml / 2);
-    const promoDiscount = freeBottles * 699; // 100ml price fallback is 699
-
-    // Coupon handling (AURA10: 10% OFF on totals >= 1199)
+    // Coupon handling (AURA10: 10% OFF on subtotal >= 1199)
     const coupon = request.nextUrl.searchParams.get('coupon')?.toUpperCase() || '';
     const threshold = 1199;
-    const beforeCoupon = Math.max(0, subtotal - promoDiscount);
-    const couponDiscount = coupon === 'AURA10' && beforeCoupon >= threshold
-      ? Math.round(beforeCoupon * 0.10)
+    const couponDiscount = coupon === 'AURA10' && subtotal >= threshold
+      ? Math.round(subtotal * 0.10)
       : 0;
-    const total = Math.max(0, beforeCoupon - couponDiscount);
+
+    // Total discount and final total
+    const totalDiscount = couponDiscount;
+    const total = Math.max(0, subtotal - totalDiscount);
 
     const promoParts: string[] = [];
-    if (promoDiscount > 0) promoParts.push('Buy 2 Get 1 Free (100ml)');
     if (couponDiscount > 0) promoParts.push('AURA10: 10% OFF');
 
     return NextResponse.json({
       items: transformedItems,
       summary: {
         subtotal,
-        discount: promoDiscount + couponDiscount,
+        discount: totalDiscount,
         total,
         promotion_text: promoParts.length ? promoParts.join(' + ') : null,
       },
@@ -168,33 +162,29 @@ export async function POST(request: NextRequest) {
       total_price: item.total_price,
     }));
 
-    // Calculate updated totals (promotions + coupon)
+    // Calculate updated totals with coupon
     const subtotal = transformedItems.reduce((sum, item) => sum + item.total_price, 0);
 
-    const count100ml = transformedItems
-      .filter(item => item.selected_size === '100ml')
-      .reduce((sum, item) => sum + item.quantity, 0);
-    const freeBottles = Math.floor(count100ml / 2);
-    const promoDiscount = freeBottles * 699; // 100ml price fallback is 699
-
+    // Coupon handling (AURA10: 10% OFF on subtotal >= 1199)
     const url = new URL(request.url);
     const coupon = url.searchParams.get('coupon')?.toUpperCase() || '';
     const threshold = 1199;
-    const beforeCoupon = Math.max(0, subtotal - promoDiscount);
-    const couponDiscount = coupon === 'AURA10' && beforeCoupon >= threshold
-      ? Math.round(beforeCoupon * 0.10)
+    const couponDiscount = coupon === 'AURA10' && subtotal >= threshold
+      ? Math.round(subtotal * 0.10)
       : 0;
-    const total = Math.max(0, beforeCoupon - couponDiscount);
+
+    // Total discount and final total
+    const totalDiscount = couponDiscount;
+    const total = Math.max(0, subtotal - totalDiscount);
 
     const promoParts: string[] = [];
-    if (promoDiscount > 0) promoParts.push('Buy 2 Get 1 Free (100ml)');
     if (couponDiscount > 0) promoParts.push('AURA10: 10% OFF');
 
     return NextResponse.json({
       items: transformedItems,
       summary: {
         subtotal,
-        discount: promoDiscount + couponDiscount,
+        discount: totalDiscount,
         total,
         promotion_text: promoParts.length ? promoParts.join(' + ') : null,
       },

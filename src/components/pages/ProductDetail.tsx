@@ -29,8 +29,8 @@ export function ProductDetail({ initialProduct = null, initialRelated = [], pref
   const [product, setProduct] = useState<Product | null>(initialProduct);
   const [relatedProducts, setRelatedProducts] = useState<AppProduct[]>(initialRelated);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string>('100ml');
-  const [currentPrice, setCurrentPrice] = useState<number>(699);
+  const [selectedSize, setSelectedSize] = useState<string>('20ml');
+  const [currentPrice, setCurrentPrice] = useState<number>(349);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
@@ -120,7 +120,7 @@ export function ProductDetail({ initialProduct = null, initialRelated = [], pref
     setSelectedSize(size);
     const sizes = product?.sizes as any;
     if (sizes && sizes[size]) {
-      setCurrentPrice(sizes[size].price || 799);
+      setCurrentPrice(sizes[size].price || 699);
     }
   };
 

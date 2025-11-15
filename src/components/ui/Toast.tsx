@@ -67,15 +67,15 @@ export function Toast({
 
 // Toast Container
 interface ToastContainerProps {
-  toasts: Array<{
+  toasts?: Array<{
     id: string;
     type: 'success' | 'error' | 'info';
     message: string;
   }>;
-  onRemove: (id: string) => void;
+  onRemove?: (id: string) => void;
 }
 
-export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
+export function ToastContainer({ toasts = [], onRemove = () => {} }: ToastContainerProps) {
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
       {toasts.map(toast => (

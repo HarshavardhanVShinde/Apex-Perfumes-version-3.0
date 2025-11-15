@@ -116,7 +116,7 @@ export async function getProducts(
   // Fetch paginated products
   const productsQuery = `
     SELECT id, name, brand, price, original_price, images, category, type, notes,
-           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
     FROM public.products
     ${whereClause}
     ORDER BY created_at DESC
@@ -155,7 +155,7 @@ export async function getFeaturedProducts(): Promise<{
   const [newProducts, bestSellers, onSale] = await Promise.all([
     sql`
       SELECT id, name, brand, price, original_price, images, category, type, notes,
-             rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+             rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
       FROM public.products
       WHERE is_new = true
       ORDER BY created_at DESC
@@ -163,7 +163,7 @@ export async function getFeaturedProducts(): Promise<{
     `,
     sql`
       SELECT id, name, brand, price, original_price, images, category, type, notes,
-             rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+             rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
       FROM public.products
       WHERE is_best_seller = true
       ORDER BY rating DESC
@@ -171,7 +171,7 @@ export async function getFeaturedProducts(): Promise<{
     `,
     sql`
       SELECT id, name, brand, price, original_price, images, category, type, notes,
-             rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+             rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
       FROM public.products
       WHERE is_on_sale = true
       ORDER BY created_at DESC
@@ -190,7 +190,7 @@ export async function getFeaturedProducts(): Promise<{
 export async function getProductsByCategory(category: string, limit: number = 12): Promise<Product[]> {
   const products = await sql`
     SELECT id, name, brand, price, original_price, images, category, type, notes,
-           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
     FROM public.products
     WHERE category = ${category}
     ORDER BY created_at DESC
@@ -204,7 +204,7 @@ export async function getProductsByCategory(category: string, limit: number = 12
 export async function getProductsByBrand(brand: string, limit: number = 12): Promise<Product[]> {
   const products = await sql`
     SELECT id, name, brand, price, original_price, images, category, type, notes,
-           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
     FROM public.products
     WHERE brand = ${brand}
     ORDER BY created_at DESC
@@ -220,7 +220,7 @@ export async function searchProducts(query: string, limit: number = 20): Promise
 
   const products = await sql`
     SELECT id, name, brand, price, original_price, images, category, type, notes,
-           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock
+           rating, is_new, is_best_seller, is_on_sale, created_at, updated_at, stock, sizes
     FROM public.products
     WHERE name ILIKE ${searchTerm}
        OR brand ILIKE ${searchTerm}

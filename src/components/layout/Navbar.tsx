@@ -37,10 +37,16 @@ export function Navbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   
   const { theme, toggleTheme } = useThemeStore();
-  const { openCart, getItemCount } = useCartStore();
+  const openCart = useCartStore(s => s.openCart);
+  const loadCart = useCartStore(s => s.loadCart);
+  const itemCount = useCartStore(s => s.items.reduce((t, i) => t + i.quantity, 0));
   const stackUser = useUser({ or: 'return-null' });
   const stackApp = useStackApp();
   const router = useRouter();
+    // Load cart on mount and when auth user changes
+    useEffect(() => {
+      loadCart().catch(() => {});
+    }, [loadCart, stackUser?.id]);
   
   // Convert Stack user to simplified user object
   const user = stackUser ? {
@@ -242,9 +248,9 @@ export function Navbar() {
               title="Open shopping cart"
             >
               <ShoppingBag className="h-5 w-5" />
-              {getItemCount() > 0 && (
+              {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-md">
-                  {getItemCount()}
+                  {itemCount}
                 </span>
               )}
             </Button>

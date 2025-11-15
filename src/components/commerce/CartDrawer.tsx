@@ -55,7 +55,7 @@ export function CartDrawer() {
 
   const handleSizeChange = async (item: CartItemType, newSize: string) => {
     const oldSizeValue = item.selectedSize ?? null;
-    const oldDisplaySize = oldSizeValue ?? '100ml';
+    const oldDisplaySize = oldSizeValue ?? '20ml';
     if (newSize === oldDisplaySize) return;
 
     const oldItemKey = buildLoadingKey(item.id, oldSizeValue);
@@ -157,7 +157,7 @@ export function CartDrawer() {
               Shopping Cart
             </h2>
             <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
-              {items.length} {items.length === 1 ? 'item' : 'items'}
+              {items.reduce((t, i) => t + i.quantity, 0)} {items.reduce((t, i) => t + i.quantity, 0) === 1 ? 'item' : 'items'}
             </p>
           </div>
           <Button 
@@ -217,7 +217,7 @@ export function CartDrawer() {
             <div className="space-y-4">
               {items.map(item => {
                 const sizeValue = item.selectedSize ?? null;
-                const selectedSize = sizeValue ?? '100ml';
+                const selectedSize = sizeValue ?? '20ml';
                 const itemKey = buildLoadingKey(item.id, sizeValue);
                 const isItemLoading = loadingItems.has(itemKey);
                 const unitPrice = item.unitPrice ?? item.product.price;

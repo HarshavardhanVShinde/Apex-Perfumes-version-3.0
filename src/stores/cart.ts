@@ -78,7 +78,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   error: null,
   couponCode: undefined,
 
-  addItem: async (product: Product, quantity = 1, selectedSize = '100ml', options?: CartMutationOptions) => {
+  addItem: async (product: Product, quantity = 1, selectedSize = '20ml', options?: CartMutationOptions) => {
     try {
       set({ error: null });
       const response = await fetch('/api/cart', {

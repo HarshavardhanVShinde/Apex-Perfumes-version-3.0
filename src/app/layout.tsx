@@ -4,35 +4,42 @@ import { stackClientApp } from "../stack/client";
 import React, { Suspense } from 'react';
 import './globals.css';
 import { Inter } from 'next/font/google';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 import dynamic from 'next/dynamic';
-import { ToastContainer } from '@/components/ui/Toast';
-import { useToast } from '@/hooks/useToast';
+
+// Dynamic imports for better code splitting
+const Navbar = dynamic(() => import('@/components/layout/Navbar').then(mod => ({ default: mod.Navbar })), {
+  ssr: true,
+  loading: () => (
+    <div className="h-16 bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-b border-gray-200 dark:border-slate-700/50 shadow-sm flex items-center justify-center">
+      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+    </div>
+  )
+});
+
+const Footer = dynamic(() => import('@/components/layout/Footer').then(mod => ({ default: mod.Footer })), {
+  ssr: true
+});
 
 const CartDrawer = dynamic(
   () => import('@/components/commerce/CartDrawer').then(mod => mod.CartDrawer),
   { ssr: false }
 );
 
-const inter = Inter({ subsets: ['latin'] });
+const ToastContainer = dynamic(
+  () => import('@/components/ui/Toast').then(mod => mod.ToastContainer),
+  { ssr: false }
+);
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { toasts, removeToast } = useToast();
-
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-primary-950 transition-colors duration-200">
-      <Suspense fallback={
-        <div className="h-16 bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-b border-gray-200 dark:border-slate-700/50 shadow-sm flex items-center justify-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-        </div>
-      }>
-        <Navbar />
-      </Suspense>
+      <Navbar />
       <main>{children}</main>
       <Footer />
       <CartDrawer />
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <ToastContainer />
     </div>
   );
 }

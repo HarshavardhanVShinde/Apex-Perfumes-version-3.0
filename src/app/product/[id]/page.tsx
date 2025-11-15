@@ -3,7 +3,9 @@ import { getProduct, getProducts } from '@/lib/neon/products';
 import type { Product as AppProduct } from '@/types';
 import type { Product as NeonProduct } from '@/lib/neon/products';
 
-function mapNeonToAppProduct(p: NeonProduct): AppProduct {
+export const revalidate = 120; // Revalidate every 2 minutes
+
+function neonToAppProduct(p: NeonProduct): AppProduct {
   const category = ((): AppProduct['category'] => {
     const v = (p.category || '').toLowerCase();
     return v === 'men' || v === 'women' || v === 'unisex' || v === 'solid' ? v : 'unisex';
@@ -58,13 +60,13 @@ export default async function Page({ params }: { params: { id: string } }) {
     try {
       const resp = await getProducts({ category: neonProduct.category }, 1, 4);
       const filtered = (resp.products || []).filter(p => p.id !== neonProduct.id).slice(0, 4);
-      related = filtered.map(mapNeonToAppProduct);
+      related = filtered.map(neonToAppProduct);
     } catch {
       related = [];
     }
   }
 
-  const appProduct: AppProduct | null = neonProduct ? mapNeonToAppProduct(neonProduct) : null;
+  const appProduct: AppProduct | null = neonProduct ? neonToAppProduct(neonProduct) : null;
 
   return (
     <ProductDetail

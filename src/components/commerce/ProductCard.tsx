@@ -19,6 +19,16 @@ export function ProductCard({ product }: ProductCardProps) {
   const { toggleItem, isInWishlist } = useWishlistStore();
   const [isWishlisted, setIsWishlisted] = useState(false);
 
+  const getMinPrice = () => {
+    if (product.sizes) {
+      const prices = Object.values(product.sizes)
+        .map((s: any) => s?.price)
+        .filter((p: any) => typeof p === 'number');
+      if (prices.length > 0) return Math.min(...prices);
+    }
+    return product.price;
+  };
+
   const getImageForIndex = (index: number) => {
     const image = product.images[index] ?? product.images[0];
     return image ?? '/perfume-logo.png';
@@ -139,7 +149,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Price */}
         <div className="flex items-center space-x-2 mb-2">
           <span className="font-bold text-lg sm:text-base text-slate-900 dark:text-white">
-            {formatPrice(product.price)}
+            From {formatPrice(getMinPrice())}
           </span>
           {product.originalPrice && (
             <span className="text-sm text-slate-500 dark:text-gray-500 line-through">

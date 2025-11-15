@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -49,13 +49,17 @@ export function Checkout() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       email: user?.email || '',
+      phone: '',
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
     }
   });
 
+  const COD_CHARGE = 49;
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online');
   const shipping = getSubtotal() >= 100 ? 0 : 15;
-  const finalTotal = getTotal() + shipping;
+  const baseTotal = getTotal() + shipping;
+  const finalTotal = useMemo(() => baseTotal + (paymentMethod === 'cod' ? COD_CHARGE : 0), [baseTotal, paymentMethod]);
 
   const onSubmit = async (data: CheckoutForm) => {
     try {
@@ -64,24 +68,65 @@ export function Checkout() {
         router.push('/handler/sign-in');
         return;
       }
+      // Build order payload
+      const orderItems = items.map(it => ({
+        name: it.product.name,
+        sku: it.product.id,
+        units: it.quantity,
+        selling_price: it.unitPrice ?? it.product.price,
+      }));
+      const shippingDetails = {
+        name: `${data.firstName} ${data.lastName}`.trim(),
+        email: data.email,
+        phone: data.phone || '',
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        pincode: data.zipCode,
+        country: data.country || 'India',
+      };
 
-      // Prepare amount (in paise for Razorpay)
-      const total = getTotal() + (getSubtotal() >= 100 ? 0 : 15);
-      const amountPaise = Math.round(total * 100);
-
-      // Create Razorpay order via server
-      const res = await fetch('/api/razorpay/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amountPaise, currency: 'INR' })
-      });
-      if (!res.ok) {
-        const details = await res.json().catch(() => ({}));
-        console.error('Razorpay order error', details);
-        alert('Failed to initialize payment. Please try again.');
+      if (paymentMethod === 'cod') {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentMethod: 'cod',
+            amount: baseTotal,
+            finalAmount: finalTotal,
+            items: orderItems,
+            shipping: shippingDetails,
+          })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          console.error('COD order error', json);
+          alert(json?.error || 'Failed to place COD order.');
+          return;
+        }
+        await clearCart();
+        alert(`COD order placed. Payable ₹${finalTotal}.`);
+        router.push('/account');
         return;
       }
-      const rpOrder = await res.json();
+
+      // Online: create Razorpay order via unified /api/orders
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentMethod: 'online',
+          amount: baseTotal, // no COD charge for prepaid
+          items: orderItems,
+          shipping: shippingDetails,
+        })
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success || !json.razorpayOrder) {
+        console.error('Order init error', json);
+        alert(json?.error || 'Failed to initialize online payment.');
+        return;
+      }
 
       // Load Razorpay SDK
       const loaded = await loadRazorpay();
@@ -89,46 +134,52 @@ export function Checkout() {
         alert('Failed to load payment SDK. Check your connection.');
         return;
       }
-
       const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
       if (!key) {
         alert('Payment configuration missing. Please contact support.');
         return;
       }
 
-      const options: any = {
+      const amountPaise = Math.round(baseTotal * 100);
+      const rzp = new (window as any).Razorpay({
         key,
         amount: amountPaise,
         currency: 'INR',
         name: 'Aura Élixir',
         description: 'Order Payment',
-        order_id: rpOrder.id,
-        prefill: {
-          name: `${data.firstName} ${data.lastName}`,
-          email: data.email,
-        },
-        notes: {
-          address: `${data.address}, ${data.city}, ${data.state} ${data.zipCode}, ${data.country}`,
-        },
+        order_id: json.razorpayOrder.id,
+        prefill: { name: shippingDetails.name, email: shippingDetails.email },
+        notes: { address: `${data.address}, ${data.city}, ${data.state} ${data.zipCode}, ${data.country}` },
         theme: { color: '#C9A227' },
         handler: async (response: any) => {
           try {
+            // Verify payment and fulfill via Shiprocket as prepaid
+            const verifyRes = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderMeta: { items: orderItems, shipping: shippingDetails, amount: baseTotal },
+              })
+            });
+            const verifyJson = await verifyRes.json();
+            if (!verifyRes.ok || !verifyJson.success) {
+              console.error('Verify error', verifyJson);
+              alert('Payment verified, but fulfillment failed. Contact support.');
+              return;
+            }
             await clearCart();
             alert('Payment successful! Your order has been placed.');
             router.push('/account');
           } catch (e) {
-            console.error('Failed to persist order after payment', e);
+            console.error('Post-payment error', e);
             alert('Payment succeeded, but order saving failed. Please contact support.');
           }
         },
-        modal: {
-          ondismiss: () => {
-            alert('Payment cancelled. You can try again.');
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
+        modal: { ondismiss: () => { alert('Payment cancelled. You can try again.'); } }
+      });
       rzp.open();
     } catch (error) {
       console.error('Checkout error:', error);
@@ -201,6 +252,15 @@ export function Checkout() {
                   {...register('email')}
                   error={errors.email?.message}
                 />
+                <div className="mt-4">
+                  <Input
+                    label="Phone Number"
+                    type="tel"
+                    placeholder="10-digit mobile"
+                    {...register('phone')}
+                    error={errors.phone?.message}
+                  />
+                </div>
               </div>
 
               {/* Shipping Address */}
@@ -253,39 +313,33 @@ export function Checkout() {
                 </div>
               </div>
 
-              {/* Payment Method (Mock) */}
+              {/* Payment Method (Online / COD) */}
               <div>
-                <h2 className="text-lg font-semibold text-primary-950 dark:text-neutral-100 mb-4">
-                  Payment Method
-                </h2>
-                <div className="bg-neutral-50 dark:bg-primary-900 p-6 rounded-lg border border-primary-200 dark:border-primary-800">
-                  <div className="flex items-center mb-4">
-                    <CreditCard className="h-5 w-5 text-primary-600 dark:text-neutral-400 mr-2" />
-                    <span className="text-primary-900 dark:text-neutral-100">Credit Card</span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    <Input
-                      label="Card Number"
-                      placeholder="1234 5678 9012 3456"
-                      disabled
+                <h2 className="text-lg font-semibold text-primary-950 dark:text-neutral-100 mb-4">Payment Method</h2>
+                <div className="bg-neutral-50 dark:bg-primary-900 p-6 rounded-lg border border-primary-200 dark:border-primary-800 space-y-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="online"
+                      checked={paymentMethod === 'online'}
+                      onChange={() => setPaymentMethod('online')}
                     />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input
-                        label="Expiry Date"
-                        placeholder="MM/YY"
-                        disabled
-                      />
-                      <Input
-                        label="CVV"
-                        placeholder="123"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                  <p className="text-sm text-primary-600 dark:text-neutral-400 mt-3 flex items-center">
-                    <Lock className="h-4 w-4 mr-1" />
-                    This is a demo. No real payment will be processed.
-                  </p>
+                    <span>Pay Online (UPI / Card)</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="cod"
+                      checked={paymentMethod === 'cod'}
+                      onChange={() => setPaymentMethod('cod')}
+                    />
+                    <span>Cash on Delivery (₹{COD_CHARGE} extra)</span>
+                  </label>
+                  {paymentMethod === 'cod' && (
+                    <p className="text-xs text-amber-600">COD Charge: ₹{COD_CHARGE} added</p>
+                  )}
                 </div>
               </div>
 
@@ -356,6 +410,12 @@ export function Checkout() {
                     {shipping === 0 ? 'Free' : formatPrice(shipping)}
                   </span>
                 </div>
+                {paymentMethod === 'cod' && (
+                  <div className="flex justify-between text-sm text-amber-600">
+                    <span>COD Charge</span>
+                    <span>+ {formatPrice(COD_CHARGE)}</span>
+                  </div>
+                )}
                 
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-2">
                   <div className="flex justify-between text-lg font-semibold">
